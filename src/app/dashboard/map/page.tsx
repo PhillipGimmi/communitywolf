@@ -151,6 +151,6 @@ export default function MapPage() {
           </div>
         </main>
       </div>
-      </AuthWrapper>
-    );
-  }
+    </AuthWrapper>
+  );
+}

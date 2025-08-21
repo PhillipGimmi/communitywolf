@@ -1,0 +1,1 @@
+G 2tsXJhr#src/components/ui/splash-screen.tsx

@@ -72,24 +72,24 @@ self.addEventListener('fetch', event => {
 
   // Skip caching for critical Next.js development and build files only
   const skipCaching =
-    url.pathname.includes('/_next/') || // Next.js chunks and assets
-    url.pathname.includes('/api/') || // API routes
-    url.pathname.includes('webpack') || // Webpack specific files
-    url.pathname.includes('chunk') || // Code splitting chunks
-    url.pathname.includes('hmr') || // Hot module reload
-    url.pathname.includes('__webpack') || // Webpack runtime
-    url.pathname.includes('react-server-dom') || // React Server Components
-    url.pathname.includes('turbopack') || // Turbopack files
-    url.pathname.includes('compiled') || // Compiled files
-    url.pathname.includes('dist') || // Distribution files
-    url.searchParams.has('_rsc') || // React Server Components
-    url.hostname.includes('supabase.co') || // Supabase requests
-    url.hostname.includes('supabase.com') || // Supabase requests
-    url.hostname.includes('tile.openstreetmap.org') || // Map tiles
-    url.hostname.includes('openstreetmap.org') || // Map tiles
-    url.hostname.includes('basemaps.cartocdn.com') || // Map tiles
-    url.hostname.includes('cdnjs.cloudflare.com') || // CDN requests
-    event.request.method !== 'GET' || // Only cache GET requests
+    url.pathname.includes('/_next/') ?? // Next.js chunks and assets
+    url.pathname.includes('/api/') ?? // API routes
+    url.pathname.includes('webpack') ?? // Webpack specific files
+    url.pathname.includes('chunk') ?? // Code splitting chunks
+    url.pathname.includes('hmr') ?? // Hot module reload
+    url.pathname.includes('__webpack') ?? // Webpack runtime
+    url.pathname.includes('react-server-dom') ?? // React Server Components
+    url.pathname.includes('turbopack') ?? // Turbopack files
+    url.pathname.includes('compiled') ?? // Compiled files
+    url.pathname.includes('dist') ?? // Distribution files
+    url.searchParams.has('_rsc') ?? // React Server Components
+    url.hostname.includes('supabase.co') ?? // Supabase requests
+    url.hostname.includes('supabase.com') ?? // Supabase requests
+    url.hostname.includes('tile.openstreetmap.org') ?? // Map tiles
+    url.hostname.includes('openstreetmap.org') ?? // Map tiles
+    url.hostname.includes('basemaps.cartocdn.com') ?? // Map tiles
+    url.hostname.includes('cdnjs.cloudflare.com') ?? // CDN requests
+    event.request.method !== 'GET' ?? // Only cache GET requests
     event.request.headers.get('range'); // Skip range requests
 
   if (skipCaching) {
@@ -98,7 +98,7 @@ self.addEventListener('fetch', event => {
   }
 
   // For app shell and static assets, use cache-first strategy
-  if (urlsToCache.includes(url.pathname) || url.pathname === '/') {
+  if (urlsToCache.includes(url.pathname) ?? url.pathname === '/') {
     event.respondWith(
       caches.match(event.request)
         .then(response => {

@@ -1,0 +1,1 @@
+ 2tsXFhr!src/app/auth/check-email/page.tsx

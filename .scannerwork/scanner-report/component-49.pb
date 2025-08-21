@@ -1,0 +1,1 @@
+1 2tsXfhr%src/components/core/SearchResults.tsx

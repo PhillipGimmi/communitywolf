@@ -11,8 +11,12 @@ npm run lint
 echo "🔍 Type checking..."
 npx tsc --noEmit
 
-# Run tests
+# Run tests (skip if no test files exist)
 echo "🧪 Running tests..."
-npm run test
+if [ -d "src" ] && find src -name "*.test.*" -o -name "*.spec.*" | grep -q .; then
+  npm run test
+else
+  echo "⚠️  No test files found, skipping tests"
+fi
 
 echo "✅ Pre-commit checks passed!"
