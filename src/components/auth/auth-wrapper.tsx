@@ -1,0 +1,41 @@
+'use client';
+
+import { useAuthStore } from '@/lib/auth/auth-store';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+interface AuthWrapperProps {
+  children: React.ReactNode;
+}
+
+export function AuthWrapper({ children }: AuthWrapperProps) {
+  const { isAuthenticated, loading, initialized } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Only redirect if we're initialized and not authenticated
+    if (initialized && !loading && !isAuthenticated) {
+      router.push('/auth/login');
+    }
+  }, [isAuthenticated, loading, initialized, router]);
+
+  // Show loading only during initial auth check
+  if (loading || !initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, don't render children (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // User is authenticated, render children
+  return <>{children}</>;
+}

@@ -1,0 +1,243 @@
+import { performWebSearch, WebSearchResult } from '@/lib/tools/web-search';
+
+export interface SearchAgentResponse {
+  summary: string;
+  results: WebSearchResult[];
+  searchTime: number;
+  totalResults: number;
+}
+
+export interface SearchAgentRequest {
+  query: string;
+  location?: string;
+  timeFrame?: 'today' | 'this week' | 'this month' | 'all time';
+}
+
+/**
+ * SearchAgent - Provides immediate natural language responses to safety news queries
+ * 
+ * This agent:
+ * 1. Performs web search for relevant news
+ * 2. Uses OpenRouter LLM to generate concise summary
+ * 3. Returns immediate response to user
+ * 4. Triggers background GeoAgent processing
+ */
+export class SearchAgent {
+  private openRouterApiKey: string;
+  private openRouterBaseUrl: string;
+
+  constructor() {
+    this.openRouterApiKey = process.env.OPENROUTER_API_KEY || '';
+    this.openRouterBaseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+    
+    if (!this.openRouterApiKey) {
+      console.warn('⚠️ OpenRouter API key not found. Using fallback mode.');
+    }
+  }
+
+  /**
+   * Main search method - returns immediate response
+   */
+  async search(request: SearchAgentRequest): Promise<SearchAgentResponse> {
+    const startTime = Date.now();
+    
+    try {
+      console.log('🔍 SearchAgent: Starting search for:', request.query, 'timeFrame:', request.timeFrame);
+      
+      // Step 1: Perform web search with time context
+      const searchQuery = this.buildTimeAwareQuery(request.query, request.timeFrame);
+      const webSearchResults = await performWebSearch(searchQuery);
+      console.log(`📊 SearchAgent: Found ${webSearchResults.results.length} web results`);
+      
+      // Step 2: Generate summary using LLM
+      let summary: string;
+      if (this.openRouterApiKey && webSearchResults.results.length > 0) {
+        summary = await this.generateSummaryWithLLM(request.query, webSearchResults.results, request.timeFrame);
+      } else {
+        summary = this.generateFallbackSummary(request.query, webSearchResults.results, request.timeFrame);
+      }
+      
+      // Step 3: Trigger background GeoAgent (fire and forget)
+      this.triggerGeoAgent(request.query, webSearchResults.results).catch(error => {
+        console.error('❌ SearchAgent: Failed to trigger GeoAgent:', error);
+      });
+      
+      const response: SearchAgentResponse = {
+        summary,
+        results: webSearchResults.results,
+        searchTime: Date.now() - startTime,
+        totalResults: webSearchResults.totalResults
+      };
+      
+      console.log('✅ SearchAgent: Search completed successfully');
+      return response;
+      
+    } catch (error) {
+      console.error('❌ SearchAgent: Search failed:', error);
+      throw new Error('Search failed. Please try again.');
+    }
+  }
+
+  /**
+   * Build time-aware search query
+   */
+  private buildTimeAwareQuery(query: string, timeFrame?: string): string {
+    if (!timeFrame || timeFrame === 'all time') {
+      return query;
+    }
+    
+    const timeModifiers = {
+      'today': 'today OR "this morning" OR "this afternoon" OR "this evening"',
+      'this week': 'this week OR "past 7 days" OR "recent days"',
+      'this month': 'this month OR "past 30 days" OR "recent weeks"'
+    };
+    
+    return `${query} ${timeModifiers[timeFrame as keyof typeof timeModifiers] || ''}`;
+  }
+
+  /**
+   * Generate summary using OpenRouter LLM
+   */
+  private async generateSummaryWithLLM(query: string, results: WebSearchResult[], timeFrame?: string): Promise<string> {
+    try {
+      const prompt = this.buildSummaryPrompt(query, results, timeFrame);
+      
+      const response = await fetch(`${this.openRouterBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.openRouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+          'X-Title': 'Safety News App'
+        },
+        body: JSON.stringify({
+          model: 'anthropic/claude-3.5-sonnet', // Good for analysis
+          messages: [
+            {
+              role: 'system',
+              content: `You are a safety news analyst. Provide concise, factual summaries of crime and public safety incidents. Focus on key details: what happened, where, when, and any safety implications. Keep summaries under 100 words. When time context is provided, emphasize recent developments and current safety status.`
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 200,
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const summary = data.choices?.[0]?.message?.content?.trim();
+      
+      if (!summary) {
+        throw new Error('No summary generated by LLM');
+      }
+
+      console.log('🤖 SearchAgent: LLM summary generated successfully');
+      return summary;
+      
+    } catch (error) {
+      console.error('❌ SearchAgent: LLM summary failed, using fallback:', error);
+      return this.generateFallbackSummary(query, results, timeFrame);
+    }
+  }
+
+  /**
+   * Build prompt for LLM summary generation
+   */
+  private buildSummaryPrompt(query: string, results: WebSearchResult[], timeFrame?: string): string {
+    const resultsText = results.map((result, index) => 
+      `${index + 1}. ${result.title}\n   Source: ${result.source}\n   Summary: ${result.snippet}\n`
+    ).join('\n');
+
+    const timeContext = timeFrame && timeFrame !== 'all time' 
+      ? `\nTime Context: Focus on ${timeFrame} - emphasize recent developments and current safety status.`
+      : '';
+
+    return `Query: "${query}"
+
+Based on these search results, provide a concise summary of the current safety situation:
+
+${resultsText}${timeContext}
+
+Please provide a clear, factual summary that:
+- Addresses the user's specific query
+- Highlights key safety concerns or incidents
+- Mentions any recent developments
+- Provides actionable safety information if relevant
+- When time context is provided, emphasize recency and current status
+
+Keep the summary under 100 words and focus on the most important information.`;
+  }
+
+  /**
+   * Fallback summary generation when LLM is unavailable
+   */
+  private generateFallbackSummary(query: string, results: WebSearchResult[], timeFrame?: string): string {
+    if (results.length === 0) {
+      const timeContext = timeFrame && timeFrame !== 'all time' ? ` for ${timeFrame}` : '';
+      return `No recent safety news found for "${query}"${timeContext}. Your area appears to be safe, but always remain vigilant and report any suspicious activity to local authorities.`;
+    }
+
+    const location = this.extractLocationFromQuery(query);
+    const incidentCount = results.length;
+    const timeContext = timeFrame && timeFrame !== 'all time' ? ` in the ${timeFrame}` : '';
+    
+    return `Found ${incidentCount} recent safety incidents in ${location}${timeContext}. Key concerns include ${this.extractKeyConcerns(results)}. Local authorities are actively monitoring the situation. Stay informed and report any suspicious activity.`;
+  }
+
+  /**
+   * Extract location from user query
+   */
+  private extractLocationFromQuery(query: string): string {
+    const locationMatch = query.match(/(?:in|at|near|around)\s+([^,]+(?:,\s*[^,]+)*)/i);
+    return locationMatch ? locationMatch[1] : 'your area';
+  }
+
+  /**
+   * Extract key safety concerns from search results
+   */
+  private extractKeyConcerns(results: WebSearchResult[]): string {
+    const concerns = results.slice(0, 2).map(result => {
+      if (result.title.toLowerCase().includes('robbery')) return 'robbery';
+      if (result.title.toLowerCase().includes('theft')) return 'theft';
+      if (result.title.toLowerCase().includes('assault')) return 'assault';
+      if (result.title.toLowerCase().includes('vandalism')) return 'vandalism';
+      return 'safety incidents';
+    });
+    
+    return concerns.join(' and ');
+  }
+
+  /**
+   * Trigger background GeoAgent processing
+   */
+  private async triggerGeoAgent(query: string, results: WebSearchResult[]): Promise<void> {
+    try {
+      console.log('🔄 SearchAgent: Triggering background GeoAgent processing...');
+      
+      // Call the GeoAgent API endpoint
+      const response = await fetch('/api/geolocate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, searchResults: results })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ SearchAgent: GeoAgent processing completed:', result);
+      } else {
+        console.warn('⚠️ SearchAgent: GeoAgent processing failed:', response.status);
+      }
+      
+    } catch (error) {
+      console.error('❌ SearchAgent: Failed to trigger GeoAgent:', error);
+      // Don't throw - this is background processing
+    }
+  }
+}

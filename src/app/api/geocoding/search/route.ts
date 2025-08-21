@@ -1,0 +1,80 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+interface NominatimItem {
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  importance: number;
+  address?: Record<string, string>;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q');
+    const countryCode = searchParams.get('country') || 'ZA';
+    const limit = searchParams.get('limit') || '5';
+
+    if (!query) {
+      return NextResponse.json(
+        { error: 'Query parameter "q" is required' },
+        { status: 400 }
+      );
+    }
+
+    // Build the Nominatim API URL
+    const nominatimUrl = new URL('https://nominatim.openstreetmap.org/search');
+    nominatimUrl.searchParams.set('format', 'json');
+    nominatimUrl.searchParams.set('q', query);
+    nominatimUrl.searchParams.set('countrycodes', countryCode);
+    nominatimUrl.searchParams.set('limit', limit);
+    nominatimUrl.searchParams.set('addressdetails', '1');
+    nominatimUrl.searchParams.set('accept-language', 'en');
+
+    console.log('🔧 Geocoding API: Searching for:', query, 'in country:', countryCode);
+
+    // Make the request to Nominatim
+    const response = await fetch(nominatimUrl.toString(), {
+      headers: {
+        'User-Agent': 'SafetyNewsApp/1.0 (https://safety-news-app.com)',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('🔧 Geocoding API: Nominatim response not ok:', response.status);
+      return NextResponse.json(
+        { error: 'Geocoding service unavailable' },
+        { status: 503 }
+      );
+    }
+
+    const data = await response.json();
+    console.log('🔧 Geocoding API: Found', data.length, 'results');
+
+    // Transform the data to a cleaner format
+    const results = data.map((item: NominatimItem) => ({
+      display_name: item.display_name,
+      lat: item.lat,
+      lon: item.lon,
+      type: item.type,
+      importance: item.importance,
+      address: item.address || {},
+    }));
+
+    return NextResponse.json({
+      query,
+      country: countryCode,
+      results,
+      count: results.length,
+    });
+
+  } catch (error) {
+    console.error('🔧 Geocoding API: Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

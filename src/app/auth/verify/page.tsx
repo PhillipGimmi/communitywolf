@@ -1,0 +1,145 @@
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ButtonLoadingSpinner } from '@/components/ui/loading-spinner';
+import { verifyEmailAction } from '@/lib/auth/secure-server-actions';
+import { CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+
+export default function VerifyEmailPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email');
+  const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim()) {
+      setError('Please enter the verification code');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await verifyEmailAction(otp);
+      
+      if (result.success) {
+        setSuccess('Email verified successfully! You can now sign in.');
+        setTimeout(() => {
+          router.push('/auth/login?message=Email verified successfully! You can now sign in.');
+        }, 2000);
+      } else {
+        setError(result.error || 'Verification failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error('Verification error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            Verify Your Email
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Enter the verification code sent to your email
+          </p>
+        </div>
+
+        <Card className="bg-white shadow-xl rounded-lg">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto bg-sky-600 rounded-2xl flex items-center justify-center mb-3">
+              <Mail className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-xl text-slate-800">Email Verification</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {email && (
+              <p className="text-sm text-slate-600 text-center">
+                Code sent to: <span className="font-medium">{email}</span>
+              </p>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500" />
+                <span className="text-sm text-red-700">{error}</span>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-green-700">{success}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleVerify} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="otp" className="text-sm font-medium text-slate-700">
+                  Verification Code <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full text-center text-lg tracking-widest"
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                disabled={isLoading || !otp.trim()}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <ButtonLoadingSpinner />
+                    <span>Verifying...</span>
+                  </div>
+                ) : (
+                  'Verify Email'
+                )}
+              </Button>
+            </form>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Link href="/auth/login" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Back to Sign In
+                </Button>
+              </Link>
+              <Link href="/auth/signup" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Create Another Account
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

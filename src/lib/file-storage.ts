@@ -1,0 +1,116 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { CrimeReport, StorageResult } from '@/types/safety';
+
+const RESULTS_DIR = path.join(process.cwd(), 'src/data/results');
+
+export async function ensureResultsDirectory(): Promise<void> {
+  try {
+    await fs.access(RESULTS_DIR);
+  } catch {
+    await fs.mkdir(RESULTS_DIR, { recursive: true });
+  }
+}
+
+export async function saveResults(filename: string, data: CrimeReport[]): Promise<StorageResult> {
+  await ensureResultsDirectory();
+  const filePath = path.join(RESULTS_DIR, filename);
+  const jsonContent = JSON.stringify(data, null, 2);
+  
+  await fs.writeFile(filePath, jsonContent);
+  
+  const stats = await fs.stat(filePath);
+  
+  console.log(`💾 Saved ${data.length} results to ${filename}`);
+  
+  return {
+    filename,
+    path: filePath,
+    size: stats.size,
+    timestamp: new Date().toISOString()
+  };
+}
+
+export async function getLatestResults(): Promise<{ data: CrimeReport[]; filename: string } | null> {
+  await ensureResultsDirectory();
+  
+  try {
+    const files = await fs.readdir(RESULTS_DIR);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) return null;
+    
+    // Sort by filename (which includes timestamp)
+    jsonFiles.sort().reverse();
+    const latestFile = jsonFiles[0];
+    
+    const filePath = path.join(RESULTS_DIR, latestFile);
+    const content = await fs.readFile(filePath, 'utf-8');
+    const data = JSON.parse(content) as CrimeReport[];
+    
+    return { data, filename: latestFile };
+  } catch (error) {
+    console.error('Error reading latest results:', error);
+    return null;
+  }
+}
+
+export async function getAllResultFiles(): Promise<string[]> {
+  await ensureResultsDirectory();
+  const files = await fs.readdir(RESULTS_DIR);
+  return files.filter(f => f.endsWith('.json')).sort().reverse();
+}
+
+export async function getResultsFile(filename: string): Promise<CrimeReport[] | null> {
+  await ensureResultsDirectory();
+  
+  try {
+    const filePath = path.join(RESULTS_DIR, filename);
+    const content = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(content) as CrimeReport[];
+  } catch (error) {
+    console.error(`Error reading results file ${filename}:`, error);
+    return null;
+  }
+}
+
+export async function deleteResultsFile(filename: string): Promise<boolean> {
+  try {
+    const filePath = path.join(RESULTS_DIR, filename);
+    await fs.unlink(filePath);
+    console.log(`🗑️ Deleted results file: ${filename}`);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting results file ${filename}:`, error);
+    return false;
+  }
+}
+
+export async function getStorageStats(): Promise<{
+  totalFiles: number;
+  totalSize: number;
+  oldestFile: string | null;
+  newestFile: string | null;
+}> {
+  await ensureResultsDirectory();
+  
+  const files = await getAllResultFiles();
+  let totalSize = 0;
+  
+  for (const file of files) {
+    try {
+      const filePath = path.join(RESULTS_DIR, file);
+      const stats = await fs.stat(filePath);
+      totalSize += stats.size;
+    } catch (error) {
+      console.error(`Error getting stats for ${file}:`, error);
+    }
+  }
+  
+  return {
+    totalFiles: files.length,
+    totalSize,
+    oldestFile: files.length > 0 ? files[files.length - 1] : null,
+    newestFile: files.length > 0 ? files[0] : null
+  };
+}

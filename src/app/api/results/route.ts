@@ -1,0 +1,93 @@
+import { NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+interface IncidentReport {
+  datetime: string;
+  coordinates: {
+    type: string;
+    coordinates: [number, number];
+  };
+  type: string;
+  newsID: string;
+  severity: number;
+  keywords: string[];
+  summary: string;
+}
+
+export async function GET() {
+  try {
+    const dataDir = path.join(process.cwd(), 'data', 'results');
+    
+    // Check if data directory exists
+    try {
+      await fs.access(dataDir);
+    } catch {
+      // Return empty results if no data directory
+      return NextResponse.json([], {
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Disposition': 'attachment; filename="safety-news-results.json"'
+        }
+      });
+    }
+    
+    // Read all JSON files in the results directory
+    const files = await fs.readdir(dataDir);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) {
+      return NextResponse.json([], {
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Disposition': 'attachment; filename="safety-news-results.json"'
+        }
+      });
+    }
+    
+    // Get the most recent file
+    const sortedFiles = jsonFiles.sort().reverse();
+    const latestFile = sortedFiles[0];
+    const filePath = path.join(dataDir, latestFile);
+    
+    // Read and parse the latest file
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    const results = JSON.parse(fileContent) as IncidentReport[];
+    
+    console.log('📊 Results API: Serving', results.length, 'incidents from', latestFile);
+    
+    // Set headers for JSON download
+    const headers = {
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="${latestFile}"`
+    };
+
+    return NextResponse.json(results, { headers });
+    
+  } catch (error) {
+    console.error('❌ Results API: Error occurred:', error);
+    
+    // Return mock data as fallback
+    const fallbackResults: IncidentReport[] = [
+      {
+        datetime: new Date().toISOString(),
+        coordinates: {
+          type: "Point",
+          coordinates: [28.0211, -26.1342]
+        },
+        type: "Public Order & Social Crimes",
+        newsID: "fallback_incident_001",
+        severity: 2,
+        keywords: ["safety", "alert", "fallback"],
+        summary: "Fallback incident data. The system is currently processing your request."
+      }
+    ];
+    
+    return NextResponse.json(fallbackResults, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Disposition': 'attachment; filename="safety-news-results-fallback.json"'
+      }
+    });
+  }
+}
