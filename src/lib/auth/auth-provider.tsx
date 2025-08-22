@@ -38,13 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         console.log('✅ AuthProvider: State already completed, no action needed');
       }
-    }, 8000); // 8 second fallback
+    }, 5000); // Reduced to 5 second fallback
     
     return () => {
       console.log('🧹 AuthProvider: Cleanup function called, clearing timeout');
       clearTimeout(fallbackTimeout);
     };
-  }, [initialize, loading, initialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialize]); // Removed loading and initialized from dependencies to prevent re-runs
 
   console.log('📱 AuthProvider: Rendering with state:', { loading, initialized });
 

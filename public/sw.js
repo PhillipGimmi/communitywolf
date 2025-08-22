@@ -92,6 +92,11 @@ self.addEventListener('fetch', event => {
     event.request.method !== 'GET' ?? // Only cache GET requests
     event.request.headers.get('range'); // Skip range requests
 
+  // For non-GET requests, just pass through without caching
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   if (skipCaching) {
     // For critical files, always fetch from network and don't log
     return;
@@ -127,7 +132,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For other requests, use network-first strategy
+  // For other GET requests, use network-first strategy
   event.respondWith(
     fetch(event.request)
       .then(response => {

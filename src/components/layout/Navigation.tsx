@@ -150,12 +150,12 @@ function NavigationStructure({
 }
 
 export function Navigation() {
+  const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const { userProfile, loading } = useAuthStore();
+  const { userProfile, loading, initialized } = useAuthStore();
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   async function handleSignOut() {
@@ -189,8 +189,13 @@ export function Navigation() {
     }
   }
 
-  // Don't render user-specific content until client-side hydration is complete
-  if (!isClient || loading) {
+  // Return null on server and during initial render to prevent hydration mismatch
+  if (!mounted) {
+    return null;
+  }
+
+  // Show loading skeleton until auth is initialized
+  if (!initialized || loading) {
     return (
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -203,24 +208,21 @@ export function Navigation() {
                 <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Safety News</h1>
               </Link>
               <div className="hidden sm:flex space-x-4 sm:space-x-6">
-                <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</Link>
-                <Link href="/dashboard/search" className="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">Search</Link>
-                <Link href="/dashboard/map" className="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">Map</Link>
-                <Link href="/dashboard/profile" className="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-sm font-medium transition-colors">Profile</Link>
+                <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Mobile Menu Button */}
               <div className="sm:hidden">
-                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </Button>
+                <div className="w-8 h-8 bg-gray-200 animate-pulse rounded"></div>
               </div>
               {/* Loading state for user info */}
               <div className="hidden sm:flex items-center space-x-2 sm:space-x-3">
                 <div className="w-20 h-8 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
               </div>
               {/* Mobile loading state */}
               <div className="sm:hidden flex items-center space-x-2">
@@ -231,10 +233,10 @@ export function Navigation() {
           {/* Mobile Menu */}
           <div className="sm:hidden border-t border-gray-200 bg-white">
             <div className="px-3 py-4 space-y-2">
-              <Link href="/dashboard" className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium transition-colors">Dashboard</Link>
-              <Link href="/dashboard/search" className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium transition-colors">Search</Link>
-              <Link href="/dashboard/map" className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium transition-colors">Map</Link>
-              <Link href="/dashboard/profile" className="block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium transition-colors">Profile</Link>
+              <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+              <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+              <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+              <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
             </div>
           </div>
         </div>

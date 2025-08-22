@@ -53,6 +53,10 @@ const isBrowser = typeof window !== 'undefined';
 
 // Shared utility functions to eliminate duplication
 const createSupabaseClient = () => {
+  if (!isBrowser) {
+    throw new Error('Supabase client cannot be created on the server');
+  }
+  
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -64,7 +68,8 @@ const setAuthenticatedState = (set: (partial: Partial<AuthState> | ((state: Auth
     isAuthenticated: true, 
     user, 
     userProfile,
-    loading: false 
+    loading: false,
+    initialized: true
   });
 };
 
@@ -73,7 +78,8 @@ const setUnauthenticatedState = (set: (partial: Partial<AuthState> | ((state: Au
     isAuthenticated: false, 
     user: null, 
     userProfile: null, 
-    loading: false 
+    loading: false,
+    initialized: true
   });
 };
 
@@ -102,8 +108,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   userProfile: null,
   user: null,
-  loading: true,
-  initialized: false,
+  loading: !isBrowser, // Set loading to false on server, true on client initially
+  initialized: !isBrowser, // Set initialized to true on server, false on client initially
   subscription: null,
   signingOut: false,
 
@@ -119,7 +125,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('🔧 AuthStore: Unsubscribing from auth listener...');
       state.subscription.unsubscribe();
     }
-    set({ isAuthenticated: false, userProfile: null, user: null, subscription: null });
+    set({ isAuthenticated: false, user: null, userProfile: null, subscription: null });
   },
 
   initialize: async () => {
@@ -135,7 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
     
-    // If not in browser, just mark as initialized
+    // If not in browser, just mark as initialized and not loading
     if (!isBrowser) {
       console.log('🚀 AuthStore: Server-side detected, marking as initialized');
       set({ initialized: true, loading: false });
