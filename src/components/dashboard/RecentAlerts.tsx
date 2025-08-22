@@ -163,7 +163,7 @@ type FilterType = 'all' | 'unread' | 'saved' | 'critical';
   const fetchCrimeReports = useCallback(async (): Promise<SafetyAlert[]> => {
     try {
       // Fetch recent crime reports from your database
-      const response = await fetch('/api/crime/reports/recent');
+      const response = await fetch(`/api/dashboard/recent-incidents?countryId=${userProfile?.country_id}&limit=5`);
       if (response.ok) {
         const reports = await response.json();
         return reports.map((report: CrimeReport) => ({
@@ -185,7 +185,7 @@ type FilterType = 'all' | 'unread' | 'saved' | 'critical';
       console.error('Failed to fetch crime reports:', error);
     }
     return [];
-  }, []);
+  }, [userProfile?.country_id]);
 
   const fetchSearchBasedAlerts = useCallback(async (): Promise<SafetyAlert[]> => {
     try {

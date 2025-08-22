@@ -9,6 +9,10 @@ type AlertType = 'crime' | 'safety' | 'weather' | 'traffic' | 'emergency';
 const ALERT_SEVERITIES: AlertSeverity[] = ['low', 'medium', 'high', 'critical'];
 const ALERT_TYPES: AlertType[] = ['crime', 'safety', 'weather', 'traffic', 'emergency'];
 
+// Timeout constants (in milliseconds)
+const OVERALL_TIMEOUT = 30000; // 30 seconds total timeout
+const SERPAPI_TIMEOUT = 15000; // 15 seconds for SerpAPI
+
 interface GenerateAlertsRequest {
   location: string;
   radius: number;
@@ -50,8 +54,13 @@ interface SearchResult {
 export async function POST(request: NextRequest) {
   console.log('🚀🚀🚀 NEW ALERTS CODE IS RUNNING! 🚀🚀🚀');
   
+  // Create an AbortController for overall timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), OVERALL_TIMEOUT);
+  
   try {
     console.log('🚀 ALERTS API: POST request received');
+    console.log(`⏱️  Overall timeout set to ${OVERALL_TIMEOUT}ms`);
     
     // Check environment variables first
     console.log('🔑 ENV CHECK:', {
@@ -100,7 +109,8 @@ export async function POST(request: NextRequest) {
       coordinates ?? null, 
       userCountry, 
       recentReports ?? [],
-      supabase // Remove await - supabase is not a Promise
+      supabase,
+      controller.signal // Pass the abort signal
     );
     
     // Map to frontend format - the frontend expects 'description' field
@@ -125,10 +135,27 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Alerts Generation API: Successfully generated', frontendAlerts.length, 'alerts');
     
+    // Clear the timeout since we succeeded
+    clearTimeout(timeoutId);
+    
     return NextResponse.json({ alerts: frontendAlerts });
     
   } catch (error) {
+    // Clear the timeout
+    clearTimeout(timeoutId);
+    
     console.error('❌ Alerts Generation API: Error occurred:', error);
+    
+    // Check if it's a timeout error
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { 
+          error: 'Request timed out',
+          details: 'The alerts generation request took too long and was cancelled'
+        },
+        { status: 408 }
+      );
+    }
     
     return NextResponse.json(
       { 
@@ -146,9 +173,15 @@ async function generateIntelligentAlertsWithStructuredOutput(
   coordinates: { lat: number; lng: number } | null,
   userCountry: string | undefined,
   recentReports: RecentReport[],
-  supabase: Awaited<ReturnType<typeof createServerClient>> // Fix the type
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  abortSignal: AbortSignal
 ): Promise<GeneratedAlert[]> {
   console.log('🧠 STEP 0: Starting alerts generation function');
+  
+  // Check if already aborted
+  if (abortSignal.aborted) {
+    throw new Error('Request was cancelled');
+  }
   
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   const serpApiKey = process.env.SERPAPI_KEY;
@@ -183,7 +216,7 @@ async function generateIntelligentAlertsWithStructuredOutput(
     const searchQuery = buildDynamicSearchQuery(location);
     console.log('   Dynamic Search Query:', searchQuery);
     
-    const searchResults = await performSerpAPISearch(searchQuery);
+    const searchResults = await performSerpAPISearch(searchQuery, abortSignal);
     
     if (searchResults.length === 0) {
       throw new Error('SerpAPI search returned no results. Cannot proceed to OpenRouter.');
@@ -226,7 +259,8 @@ async function generateIntelligentAlertsWithStructuredOutput(
         temperature: 0.1,
         max_tokens: 1500,
         response_format: { type: "json_object" }
-      })
+      }),
+      signal: abortSignal // Add abort signal to fetch
     });
 
     if (!response.ok) {
@@ -292,7 +326,7 @@ async function generateIntelligentAlertsWithStructuredOutput(
     
     // STEP 5: Save to Supabase - NEW FINAL STEP
     console.log('💾 STEP 5: Saving to Supabase Starting...');
-    const savedAlerts = await saveAlertsToSupabase(validatedAlerts, coordinates, supabase);
+    const savedAlerts = await saveAlertsToSupabase(validatedAlerts, coordinates, supabase, abortSignal);
     console.log('✅ STEP 5 COMPLETE: Saved', savedAlerts.length, 'alerts to Supabase');
     
     return validatedAlerts;
@@ -304,7 +338,7 @@ async function generateIntelligentAlertsWithStructuredOutput(
   }
 }
 
-async function performSerpAPISearch(query: string): Promise<SearchResult[]> {
+async function performSerpAPISearch(query: string, abortSignal: AbortSignal): Promise<SearchResult[]> {
   try {
     const serpApiKey = process.env.SERPAPI_KEY;
     if (!serpApiKey) {
@@ -317,7 +351,17 @@ async function performSerpAPISearch(query: string): Promise<SearchResult[]> {
     const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(query)}&api_key=${serpApiKey}&num=10`;
     console.log('   SerpAPI URL (without key):', url.replace(serpApiKey, 'HIDDEN_KEY'));
     
-    const response = await fetch(url);
+    // Create a timeout promise for SerpAPI
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('SerpAPI request timed out')), SERPAPI_TIMEOUT);
+    });
+    
+    // Create the fetch promise with abort signal
+    const fetchPromise = fetch(url, { signal: abortSignal });
+    
+    // Race between timeout and fetch
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
+    
     console.log('   SerpAPI Response Status:', response.status, response.statusText);
     
     if (!response.ok) {
@@ -523,11 +567,17 @@ function extractPartialAlertsFromContent(content: string): GeneratedAlert[] {
 async function saveAlertsToSupabase(
   alerts: GeneratedAlert[], 
   coordinates: { lat: number; lng: number } | null,
-  supabase: Awaited<ReturnType<typeof createServerClient>>
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  abortSignal: AbortSignal
 ): Promise<GeneratedAlert[]> {
   const savedAlerts: GeneratedAlert[] = [];
   
   for (const alert of alerts) {
+    // Check if request was aborted
+    if (abortSignal.aborted) {
+      throw new Error('Request was cancelled during Supabase save operation');
+    }
+    
     try {
       // Convert severity from text to numeric (1-5)
       const severityMap: Record<string, number> = {
