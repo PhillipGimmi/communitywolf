@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     remotePatterns: [
       { protocol: "http", hostname: "localhost" },
+      { protocol: "https", hostname: "communitywolf.vercel.app" },
       { protocol: "https", hostname: "inokcdrlfrmjjjhbgdvx.supabase.co" },
       { protocol: "https", hostname: "*.supabase.co" },
       { protocol: "https", hostname: "*.supabase.com" },
@@ -76,7 +77,7 @@ const nextConfig: NextConfig = {
   env: {
     SITE_NAME: 'Safety News App',
     SITE_URL: process.env.NODE_ENV === 'production' 
-      ? 'https://your-domain.com' 
+      ? 'https://communitywolf.vercel.app' 
       : `http://localhost:${process.env.PORT ?? 3000}`,
   },
 };
