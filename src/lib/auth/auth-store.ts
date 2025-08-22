@@ -69,7 +69,7 @@ const setAuthenticatedState = (set: (partial: Partial<AuthState> | ((state: Auth
     user, 
     userProfile,
     loading: false,
-    initialized: true
+    initialized: true  // Only set initialized when we know the auth state
   });
 };
 
@@ -79,7 +79,7 @@ const setUnauthenticatedState = (set: (partial: Partial<AuthState> | ((state: Au
     user: null, 
     userProfile: null, 
     loading: false,
-    initialized: true
+    initialized: true  // Only set initialized when we know the auth state
   });
 };
 
@@ -113,8 +113,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   userProfile: null,
   user: null,
-  loading: !isBrowser, // Set loading to false on server, true on client initially
-  initialized: !isBrowser, // Set initialized to true on server, false on client initially
+  loading: isBrowser, // Start loading on client, not loading on server
+  initialized: !isBrowser, // Start initialized on server, not initialized on client
   subscription: null,
   signingOut: false,
 
@@ -155,8 +155,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     
     console.log('🚀 AuthStore: Browser detected, starting initialization...');
     
-    // Immediately set as initializing to prevent multiple calls
-    set({ initialized: true });
+    // Set loading state but DON'T set initialized yet
+    set({ loading: true });
     
     try {
       // Create Supabase client
