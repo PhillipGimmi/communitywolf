@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandler } from '@/lib/supabase/server';
-import { getUserProfile } from '@/lib/auth/server-auth-context';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function GET(
   request: NextRequest,
@@ -16,33 +20,7 @@ export async function GET(
       );
     }
 
-    // Get user profile to validate access
-    const userProfile = await getUserProfile();
-    
-    if (!userProfile) {
-      console.error('Countries API: No user profile found');
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Validate that user is requesting their own country
-    if (userProfile.country_id !== id) {
-      console.error('Countries API: User attempting to access different country:', {
-        userCountryId: userProfile.country_id,
-        requestedCountryId: id
-      });
-      return NextResponse.json(
-        { error: 'Access denied - can only access your own country' },
-        { status: 403 }
-      );
-    }
-
-    // Use authenticated client that respects RLS policies
-    const supabase = await createRouteHandler();
-
-    // Fetch country data from Supabase with RLS enforcement
+    // Fetch country data from Supabase
     const { data: country, error } = await supabase
       .from('countries')
       .select('*')
@@ -51,7 +29,7 @@ export async function GET(
       .single();
 
     if (error) {
-      console.error('Countries API: Database error:', error);
+      console.error('Error fetching country:', error);
       return NextResponse.json(
         { error: 'Failed to fetch country data' },
         { status: 500 }
@@ -59,22 +37,15 @@ export async function GET(
     }
 
     if (!country) {
-      console.error('Countries API: Country not found:', id);
       return NextResponse.json(
         { error: 'Country not found' },
         { status: 404 }
       );
     }
 
-    console.log('Countries API: Successfully fetched country:', {
-      countryId: id,
-      countryName: country.name,
-      userId: userProfile.id
-    });
-
     return NextResponse.json(country);
   } catch (error) {
-    console.error('Countries API: Unexpected error:', error);
+    console.error('Unexpected error in countries API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

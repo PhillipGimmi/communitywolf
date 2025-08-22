@@ -9,7 +9,7 @@ interface Country {
   code: string;
   timezone: string;
   currency: string;
-  emergency_number?: string;
+  emergency_number: string;
   active: boolean;
   settings: Record<string, string | number | boolean>;
 }
@@ -49,30 +49,39 @@ export function CountryProvider({ children }: Readonly<{ children: React.ReactNo
   }, [userProfile]);
 
   useEffect(() => {
-    if (!userProfile?.country_id) {
-      console.log('⚠️ CountryProvider: No country_id in user profile');
-      setIsCountryLoaded(true);
-      return;
-    }
+    const fetchUserCountry = async () => {
+      console.log('🔍 CountryProvider: Starting country fetch...');
+      
+      if (!userProfile?.country_id) {
+        console.log('⚠️ CountryProvider: No country_id in user profile, skipping fetch');
+        setIsCountryLoaded(true);
+        return;
+      }
 
-    // Use country data directly from user profile - no API call needed
-    // The country object only has name and code from the join
-    const countryData = {
-      id: userProfile.country_id,
-      name: userProfile.country?.name || 'Unknown Country',
-      code: userProfile.country?.code || 'UN',
-      timezone: 'UTC', // Default timezone
-      currency: 'USD', // Default currency
-      emergency_number: undefined, // Default emergency number
-      active: true,
-      settings: {} // Default empty settings
+      try {
+        setError(null);
+        console.log('🔍 CountryProvider: Fetching country data for ID:', userProfile.country_id);
+
+        // Fetch country details from Supabase
+        const response = await fetch(`/api/countries/${userProfile.country_id}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch country data');
+        }
+
+        const countryData = await response.json();
+        console.log('✅ CountryProvider: Country data fetched successfully:', countryData);
+        setUserCountry(countryData);
+        setIsCountryLoaded(true);
+      } catch (err) {
+        console.error('❌ CountryProvider: Error fetching user country:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch country data');
+        setIsCountryLoaded(true);
+      }
     };
 
-    console.log('✅ CountryProvider: Using country data from profile:', countryData);
-    setUserCountry(countryData);
-    setIsCountryLoaded(true);
-    setError(null);
-  }, [userProfile?.country_id, userProfile?.country]);
+    fetchUserCountry();
+  }, [userProfile?.country_id]);
 
   const value = useMemo<CountryContextType>(() => ({
     userCountry,

@@ -313,23 +313,12 @@ export default function DashboardPage() {
   ];
 
   const renderTabContent = () => {
-    // Get current URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewParam = urlParams.get('view');
-
-    console.log('🔍 Dashboard: Rendering tab content for:', activeTab, {
-      viewParam,
-      hasUserProfile: !!userProfile,
-      userCountryId: userProfile?.country_id
-    });
-
     switch (activeTab) {
       case 'overview':
         return renderDashboardOverview();
       case 'locations':
         return <SavedLocations 
           key="saved-locations"
-          initialViewMode={viewParam === 'map' ? 'map' : 'list'}
           onLocationUpdate={handleLocationUpdate}
         />;
       case 'alerts':

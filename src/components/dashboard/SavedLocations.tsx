@@ -14,12 +14,10 @@ import {
   Star,
   Home,
   Building,
-  Navigation,
-  Map,
-  List
+  Navigation
 } from 'lucide-react';
 import { SavedLocation } from '@/types/dashboard';
-import { useCountryFilter } from '@/lib/utils/country-filter';
+import { useCountry } from '@/contexts/CountryContext';
 import { AddressLookup } from '@/components/ui/address-lookup';
 import { useAuthStore } from '@/lib/auth/auth-store';
 import { 
@@ -28,43 +26,19 @@ import {
   updateSavedLocationAction, 
   deleteSavedLocationAction 
 } from '@/lib/supabase/saved-locations-actions';
-import dynamic from 'next/dynamic';
 
-// Dynamically import the map component to avoid SSR issues
-const LocationMap = dynamic(() => import('./LocationMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-        <p className="text-gray-500">Loading map...</p>
-      </div>
-    </div>
-  ),
-});
+
+
 
 interface SavedLocationsProps {
-  initialViewMode?: 'list' | 'map';
   onLocationUpdate?: () => void;
 }
 
 export function SavedLocations({ 
-  initialViewMode = 'list',
   onLocationUpdate 
 }: SavedLocationsProps) {
-  const { userCountry } = useCountryFilter();
+  const { userCountry } = useCountry();
   const { userProfile } = useAuthStore();
-
-  const [locations, setLocations] = useState<SavedLocation[]>([]);
-  const [isAddingLocation, setIsAddingLocation] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>(initialViewMode);
-  const [newLocation, setNewLocation] = useState({
-    name: '',
-    address: '',
-    radius_km: 5.0,
-    coordinates: undefined as { lat: number; lng: number } | undefined
-  });
 
   // Debug logging
   useEffect(() => {
@@ -74,16 +48,20 @@ export function SavedLocations({
       userCountryName: userCountry?.name,
       hasUserProfile: !!userProfile,
       userProfileId: userProfile?.id,
-      userProfileCountryId: userProfile?.country_id,
-      viewMode,
-      locationsCount: locations.length
+      userProfileCountryId: userProfile?.country_id
     });
-  }, [userCountry, userProfile, viewMode, locations]);
+  }, [userCountry, userProfile]);
 
-  // Additional debug logging for tab switching
-  useEffect(() => {
-    console.log('🔍 SavedLocations: View mode changed to:', viewMode);
-  }, [viewMode]);
+  const [locations, setLocations] = useState<SavedLocation[]>([]);
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(null);
+
+  const [newLocation, setNewLocation] = useState({
+    name: '',
+    address: '',
+    radius_km: 5.0,
+    coordinates: undefined as { lat: number; lng: number } | undefined
+  });
 
   useEffect(() => {
     // Fetch saved locations from Supabase
@@ -246,35 +224,6 @@ export function SavedLocations({
           <p className="text-sm sm:text-base text-gray-600">Manage your monitored addresses and safety zones in {userCountry.name}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-          {/* View Mode Toggle */}
-          <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-white w-full sm:w-auto">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className={`flex-1 sm:flex-none rounded-md text-sm ${
-                viewMode === 'list' 
-                  ? 'bg-black hover:bg-gray-800 text-white' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              <List className="h-4 w-4 mr-2" />
-              <span className="hidden xs:inline">List</span>
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('map')}
-              className={`flex-1 sm:flex-none rounded-md text-sm ${
-                viewMode === 'map' 
-                  ? 'bg-black hover:bg-gray-800 text-white' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              <Map className="h-4 w-4 mr-2" />
-              <span className="hidden xs:inline">Map</span>
-            </Button>
-          </div>
           <Button 
             onClick={() => setIsAddingLocation(true)}
             className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-black hover:bg-gray-800 text-white text-sm"
@@ -362,16 +311,7 @@ export function SavedLocations({
         </Card>
       )}
 
-      {/* Content based on view mode */}
-      {viewMode === 'map' ? (
-        <LocationMap 
-          locations={locations} 
-          onLocationClick={(location) => {
-            handleEditLocation(location);
-            setViewMode('list');
-          }}
-        />
-      ) : (
+      {/* Content */}
         <>
           {/* Locations Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -453,7 +393,6 @@ export function SavedLocations({
             </Card>
           )}
         </>
-      )}
     </div>
   );
 }

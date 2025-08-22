@@ -1,11 +1,11 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, MapPin, Shield } from 'lucide-react';
+import { User, Shield } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth/auth-store';
 
 export function ProfileContent() {
@@ -103,35 +103,7 @@ export function ProfileContent() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <Card className="border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200">
-            <CardTitle className="text-gray-900">Quick Actions</CardTitle>
-            <CardDescription className="text-gray-600">
-              Common tasks and navigation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 flex flex-col items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
-                onClick={() => window.location.href = '/dashboard'}
-              >
-                <MapPin className="w-6 h-6" />
-                <span>Back to Dashboard</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 flex flex-col items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
-                onClick={() => window.location.href = '/dashboard/search'}
-              >
-                <User className="w-6 h-6" />
-                <span>Search Safety News</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+     
       </div>
     </main>
   );
