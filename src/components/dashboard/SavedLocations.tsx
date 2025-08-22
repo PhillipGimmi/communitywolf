@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { 
   MapPin, 
   Plus, 
-  Edit, 
+
   Trash2, 
   Star,
   Home,
@@ -340,7 +340,7 @@ export function SavedLocations({
                         onClick={() => handleEditLocation(location)}
                         className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+        
                       </Button>
                       <Button
                         variant="ghost"

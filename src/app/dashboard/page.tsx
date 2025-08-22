@@ -9,7 +9,7 @@ import {
   AlertTriangle, 
   Plus,
   BarChart3,
-  Bell,
+
   FileText
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth/auth-store';
@@ -359,10 +359,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <Button variant="outline" size="sm" className="border-black text-black hover:bg-gray-100 text-xs sm:text-sm px-2 sm:px-3">
-                  <Bell className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Alerts</span>
-                </Button>
+    
                 <Button 
                   size="sm" 
                   className="bg-black hover:bg-gray-800 text-white text-xs sm:text-sm px-2 sm:px-3"
