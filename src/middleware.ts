@@ -53,9 +53,12 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - manifest.json (PWA manifest file) <- ADDED THIS
+     * - sw.js (service worker) <- ADDED THIS
+     * - icons/ (icon files) <- ADDED THIS
      * - public folder
      * - api routes (API endpoints)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons/|public|api).*)',
   ],
 };
