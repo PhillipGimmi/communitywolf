@@ -55,18 +55,6 @@ export function SavedLocations({
   const { userCountry } = useCountryFilter();
   const { userProfile } = useAuthStore();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 SavedLocations: Component mounted/updated:', {
-      hasUserCountry: !!userCountry,
-      userCountryId: userCountry?.id,
-      userCountryName: userCountry?.name,
-      hasUserProfile: !!userProfile,
-      userProfileId: userProfile?.id,
-      userProfileCountryId: userProfile?.country_id
-    });
-  }, [userCountry, userProfile]);
-
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(null);
@@ -77,6 +65,25 @@ export function SavedLocations({
     radius_km: 5.0,
     coordinates: undefined as { lat: number; lng: number } | undefined
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 SavedLocations: Component mounted/updated:', {
+      hasUserCountry: !!userCountry,
+      userCountryId: userCountry?.id,
+      userCountryName: userCountry?.name,
+      hasUserProfile: !!userProfile,
+      userProfileId: userProfile?.id,
+      userProfileCountryId: userProfile?.country_id,
+      viewMode,
+      locationsCount: locations.length
+    });
+  }, [userCountry, userProfile, viewMode, locations]);
+
+  // Additional debug logging for tab switching
+  useEffect(() => {
+    console.log('🔍 SavedLocations: View mode changed to:', viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     // Fetch saved locations from Supabase
