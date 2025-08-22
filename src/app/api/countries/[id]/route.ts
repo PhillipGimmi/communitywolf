@@ -21,18 +21,31 @@ export async function GET(
 ) {
   try {
     console.log('🔍 Countries API: Starting request');
-    console.log('🔍 Countries API: Environment variables check:', {
+    
+    // Test environment variables
+    const envCheck = {
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + '...',
       serviceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0
-    });
+    };
+    
+    console.log('🔍 Countries API: Environment variables check:', envCheck);
+    
+    // Return environment check for debugging
+    if (request.nextUrl.searchParams.get('debug') === 'true') {
+      return NextResponse.json({
+        message: 'Environment check',
+        envCheck,
+        timestamp: new Date().toISOString()
+      });
+    }
 
     // Check if Supabase is properly configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       console.error('❌ Countries API: Supabase environment variables not configured');
       return NextResponse.json(
-        { error: 'Database configuration error' },
+        { error: 'Database configuration error', envCheck },
         { status: 500 }
       );
     }
