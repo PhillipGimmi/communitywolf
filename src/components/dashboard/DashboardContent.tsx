@@ -39,6 +39,18 @@ export function DashboardContent() {
     });
   }, [isAuthenticated, initialized, userProfile]);
 
+  // Production debug logging
+  useEffect(() => {
+    console.log('🔍 PRODUCTION DEBUG:', {
+      isAuthenticated,
+      initialized,
+      hasUserProfile: !!userProfile,
+      timestamp: new Date().toISOString(),
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
+      url: typeof window !== 'undefined' ? window.location.href : 'server'
+    });
+  }, [isAuthenticated, initialized, userProfile]);
+
   // Dashboard data state - moved to parent level
   const [dashboardData, setDashboardData] = useState<{
     stats: DashboardStats;
