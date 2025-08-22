@@ -95,7 +95,12 @@ const fetchUserProfile = async (supabase: ReturnType<typeof createBrowserClient>
       console.warn('⚠️ AuthStore: Could not fetch profile:', profileError);
       return null;
     } else {
-      console.log('✅ AuthStore: Profile fetched successfully:', profile.full_name);
+      console.log('✅ AuthStore: Profile fetched successfully:', {
+        fullName: profile.full_name,
+        userId: profile.id,
+        countryId: profile.country_id,
+        hasCountryId: !!profile.country_id
+      });
       return profile;
     }
   } catch (profileError) {

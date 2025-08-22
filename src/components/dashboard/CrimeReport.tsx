@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
-  AlertTriangle, 
+
   Map,
   Navigation,
   Save,
@@ -241,10 +241,7 @@ export function CrimeReport() {
           <h2 className="text-2xl font-bold text-black">Report a Crime</h2>
           <p className="text-gray-600">Help keep your community safe by reporting incidents in {userCountry.name}</p>
         </div>
-        <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-          <AlertTriangle className="h-4 w-4 mr-2 text-gray-800" />
-          Emergency: Call {userCountry.emergency_number ?? '911'} for immediate danger
-        </Badge>
+
       </div>
              {/* Success/Error Messages */}
        {submitSuccess && (
@@ -305,15 +302,15 @@ export function CrimeReport() {
            </div>
          </div>
        )}
-       <form onSubmit={handleSubmit} className="space-y-6">
+       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
          {/* Crime Details */}
          <Card className="border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Incident Details</CardTitle>
-            <CardDescription>Provide information about what happened</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Incident Details</CardTitle>
+            <CardDescription className="text-sm">Provide information about what happened</CardDescription>
           </CardHeader>
-                    <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-3">
                 <Label htmlFor="incident_type" className="text-sm font-medium text-gray-700">Type of Incident *</Label>
                 <Select 
@@ -354,7 +351,7 @@ export function CrimeReport() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Label htmlFor="title" className="text-sm font-medium text-gray-700">Brief Title *</Label>
               <Input
                 id="title"
@@ -362,31 +359,31 @@ export function CrimeReport() {
                 value={reportData.title}
                 onChange={(e) => setReportData(prev => ({ ...prev, title: e.target.value }))}
                 maxLength={100}
-                className="h-11"
+                className="h-10 sm:h-11 text-sm"
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">Detailed Description</Label>
               <Textarea
                 id="description"
                 placeholder="Provide as many details as possible about what happened, when, and any suspects or vehicles involved..."
                 value={reportData.description}
                 onChange={(e) => setReportData(prev => ({ ...prev, description: e.target.value }))}
-                rows={4}
+                rows={3}
                 maxLength={1000}
-                className="resize-none"
+                className="resize-none text-sm"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
                 <Label htmlFor="incident_date" className="text-sm font-medium text-gray-700">Date of Incident *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal border-gray-200 h-11"
+                      className="w-full justify-start text-left font-normal border-gray-200 h-10 sm:h-11 text-sm"
                     >
-                                             <CalendarIcon className="mr-2 h-4 w-4 text-gray-800" />
+                                             <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-800" />
                       {reportData.incident_date ? (
                         new Date(reportData.incident_date).toLocaleDateString('en-US', {
                           weekday: 'long',
@@ -416,9 +413,9 @@ export function CrimeReport() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <Label htmlFor="incident_time" className="text-sm font-medium text-gray-700">Time of Incident</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <Select 
                     value={reportData.incident_time.split(':')[0]} 
                     onValueChange={(hour) => {
@@ -427,7 +424,7 @@ export function CrimeReport() {
                       setReportData(prev => ({ ...prev, incident_time: newTime }));
                     }}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Hour" />
                     </SelectTrigger>
                     <SelectContent>
@@ -446,7 +443,7 @@ export function CrimeReport() {
                       setReportData(prev => ({ ...prev, incident_time: newTime }));
                     }}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Minute" />
                     </SelectTrigger>
                     <SelectContent>
@@ -465,11 +462,11 @@ export function CrimeReport() {
         {/* Location Selection */}
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Location Details</CardTitle>
-            <CardDescription>Where did this incident occur?</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Location Details</CardTitle>
+            <CardDescription className="text-sm">Where did this incident occur?</CardDescription>
           </CardHeader>
-                    <CardContent className="space-y-6">
-            <div className="space-y-3">
+                    <CardContent className="space-y-4 sm:space-y-6">
+            <div className="space-y-2 sm:space-y-3">
               <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address *</Label>
               <AddressLookup
                 onAddressSelect={handleAddressSelect}
@@ -478,13 +475,13 @@ export function CrimeReport() {
                 onChange={(value) => setReportData(prev => ({ ...prev, address: value }))}
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Label htmlFor="radius" className="text-sm font-medium text-gray-700">Radius (km) *</Label>
               <Select 
                 value={reportData.radius_km.toString()} 
                 onValueChange={(value) => setReportData(prev => ({ ...prev, radius_km: parseFloat(value) }))}
               >
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-10 sm:h-11 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -495,10 +492,10 @@ export function CrimeReport() {
                   <SelectItem value="10.0">10.0 km</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-sm text-gray-500">Select the radius around the incident location</p>
+              <p className="text-xs sm:text-sm text-gray-500">Select the radius around the incident location</p>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -508,13 +505,13 @@ export function CrimeReport() {
                     console.log('🔧 CrimeReport: Current coordinates:', reportData.coordinates);
                     setShowMap(true);
                   }}
-                  className="border-black text-black hover:bg-gray-100 h-11 px-6"
+                  className="border-black text-black hover:bg-gray-100 h-10 sm:h-11 px-4 sm:px-6 text-sm w-full sm:w-auto"
                 >
-                                     <Map className="h-4 w-4 mr-2 text-gray-800" />
+                                     <Map className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-800" />
                    Select on Map
                 </Button>
                 {mapCoordinates && (
-                                     <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                                     <Badge variant="secondary" className="bg-gray-100 text-gray-800 text-xs">
                      <Navigation className="h-3 w-3 mr-1 text-gray-800" />
                      Location Selected: {mapCoordinates.lat.toFixed(4)}, {mapCoordinates.lng.toFixed(4)}
                    </Badge>
@@ -524,37 +521,37 @@ export function CrimeReport() {
           </CardContent>
         </Card>
                  {/* Submit Section */}
-         <div className="flex items-center justify-between pt-6">
-           <div className="text-sm text-gray-600 space-y-1">
+         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-4 sm:pt-6">
+           <div className="text-xs sm:text-sm text-gray-600 space-y-1">
              <p>• All reports are reviewed by local authorities</p>
              <p>• Your personal information is protected</p>
              <p>• False reports may result in legal consequences</p>
            </div>
-           <div className="flex items-center space-x-4">
+           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                          <Button
                type="button"
                variant="outline"
                               onClick={() => {
                   resetForm();
                }}
-               className="border-black text-black hover:bg-gray-100 h-11 px-6"
+               className="border-black text-black hover:bg-gray-100 h-10 sm:h-11 px-4 sm:px-6 text-sm w-full sm:w-auto"
              >
-                               <X className="h-4 w-4 mr-2 text-gray-800" />
+                               <X className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-800" />
                 Clear Form
              </Button>
                           <Button
                type="submit"
                disabled={isSubmitting || !reportData.incident_type || !reportData.title || !reportData.address}
-               className="bg-black hover:bg-gray-800 text-white h-11 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
+               className="bg-black hover:bg-gray-800 text-white h-10 sm:h-11 px-6 sm:px-8 text-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
              >
                {isSubmitting ? (
                  <>
-                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                   <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-2"></div>
                    Submitting Report...
                  </>
                ) : (
                  <>
-                   <Save className="h-4 w-4 mr-2 text-white" />
+                   <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-white" />
                    Submit Report
                  </>
                )}
@@ -567,19 +564,19 @@ export function CrimeReport() {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-2xl w-full h-full max-w-7xl max-h-[95vh] flex flex-col">
             {/* Map Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-b border-gray-200 space-y-3 sm:space-y-0">
               <div>
-                <h3 className="text-lg font-semibold text-black">Select Incident Location</h3>
-                <p className="text-sm text-gray-600">Click on the map to select the exact location where the incident occurred</p>
+                <h3 className="text-base sm:text-lg font-semibold text-black">Select Incident Location</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Click on the map to select the exact location where the incident occurred</p>
               </div>
-                           <div className="flex items-center space-x-3">
+                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                {mapCoordinates && (
                  <>
-                   <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                   <Badge variant="secondary" className="bg-gray-100 text-gray-800 text-xs">
                      <Navigation className="h-3 w-3 mr-1 text-gray-800" />
                      {mapCoordinates.lat.toFixed(4)}, {mapCoordinates.lng.toFixed(4)}
                    </Badge>
-                   <Badge variant="secondary" className="bg-gray-200 text-gray-800">
+                   <Badge variant="secondary" className="bg-gray-200 text-gray-800 text-xs">
                      Radius: {reportData.radius_km} km
                    </Badge>
                  </>
@@ -588,9 +585,9 @@ export function CrimeReport() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowMap(false)}
-                  className="border-black text-black hover:bg-gray-100"
+                  className="border-black text-black hover:bg-gray-100 text-sm w-full sm:w-auto"
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Close
                 </Button>
               </div>
@@ -618,14 +615,14 @@ export function CrimeReport() {
                />
             </div>
             {/* Map Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
+            <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <div className="text-xs sm:text-sm text-gray-600">
                   <p>• Click anywhere on the map to select the incident location</p>
                   <p>• Use the address search above for precise addresses</p>
                   <p>• Selected coordinates will be saved with your report</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                   <Button
                     type="button"
                     variant="outline"
@@ -634,15 +631,15 @@ export function CrimeReport() {
                       setReportData(prev => ({ ...prev, coordinates: undefined }));
                     }}
                     disabled={!mapCoordinates}
-                    className="border-black text-black hover:bg-gray-100"
+                    className="border-black text-black hover:bg-gray-100 text-sm w-full sm:w-auto"
                   >
-                    <X className="h-4 w-4 mr-2" />
+                    <X className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                     Clear Selection
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setShowMap(false)}
-                    className="bg-black hover:bg-gray-800 text-white"
+                    className="bg-black hover:bg-gray-800 text-white text-sm w-full sm:w-auto"
                   >
                     Confirm Location
                   </Button>

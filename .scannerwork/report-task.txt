@@ -2,5 +2,5 @@ projectKey=community-wolf
 serverUrl=http://localhost:9000
 serverVersion=25.8.0.112029
 dashboardUrl=http://localhost:9000/dashboard?id=community-wolf
-ceTaskId=6dcace27-e9b1-4aa6-9de3-7fea049c2e85
-ceTaskUrl=http://localhost:9000/api/ce/task?id=6dcace27-e9b1-4aa6-9de3-7fea049c2e85
+ceTaskId=b1f9dd63-dc8a-4318-9a8f-d273b5da70d4
+ceTaskUrl=http://localhost:9000/api/ce/task?id=b1f9dd63-dc8a-4318-9a8f-d273b5da70d4

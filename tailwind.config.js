@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+      },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out',
         'fade-in-delayed': 'fadeIn 0.6s ease-out 0.3s both',

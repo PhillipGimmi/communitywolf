@@ -78,90 +78,90 @@ export function DashboardOverview({ stats, loading, onTabChange, primaryLocation
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'decreasing':
-        return <TrendingUp className="h-4 w-4 text-black" />;
+        return <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-black" />;
       case 'increasing':
-        return <TrendingUp className="h-4 w-4 text-black rotate-180" />;
+        return <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-black rotate-180" />;
       default:
-        return <Target className="h-4 w-4 text-black" />;
+        return <Target className="h-3 w-3 sm:h-4 sm:w-4 text-black" />;
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Incidents</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Incidents</p>
                 {loading ? (
-                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  <div className="animate-pulse bg-gray-200 h-6 sm:h-8 w-12 sm:w-16 rounded"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-black">{stats.totalIncidents}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-black">{stats.totalIncidents}</p>
                 )}
               </div>
-              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-black" />
+              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Recent (7 days)</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Recent (7 days)</p>
                 {loading ? (
-                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  <div className="animate-pulse bg-gray-200 h-6 sm:h-8 w-12 sm:w-16 rounded"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-black">{stats.recentIncidents}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-black">{stats.recentIncidents}</p>
                 )}
               </div>
-              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Clock className="h-6 w-6 text-black" />
+              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg Severity</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Avg Severity</p>
                 {loading ? (
-                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                  <div className="animate-pulse bg-gray-200 h-6 sm:h-8 w-12 sm:w-16 rounded"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-black">{stats.averageSeverity}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-black">{stats.averageSeverity}</p>
                 )}
               </div>
-              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Shield className="h-6 w-6 text-black" />
+              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Trend</p>
-                <div className="flex items-center space-x-2 mt-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Trend</p>
+                <div className="flex items-center space-x-1 sm:space-x-2 mt-1">
                   {getTrendIcon(stats.crimeTrend)}
                   {loading ? (
-                    <div className="animate-pulse bg-gray-200 h-4 w-16 rounded"></div>
+                    <div className="animate-pulse bg-gray-200 h-3 sm:h-4 w-12 sm:w-16 rounded"></div>
                   ) : (
-                    <Badge className={getTrendColor(stats.crimeTrend)}>
+                    <Badge className={`${getTrendColor(stats.crimeTrend)} text-xs sm:text-sm`}>
                       {stats.crimeTrend}
                     </Badge>
                   )}
                 </div>
               </div>
-              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-black" />
+              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 sm:h-6 sm:w-6 text-black" />
               </div>
             </div>
           </CardContent>
@@ -216,43 +216,43 @@ export function DashboardOverview({ stats, loading, onTabChange, primaryLocation
         {/* Quick Actions */}
         <Card className="border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             <Button 
               variant="outline" 
-              className="w-full justify-start border-black text-black hover:bg-gray-100" 
+              className="w-full justify-start border-black text-black hover:bg-gray-100 text-sm" 
               size="sm"
               onClick={handleSearchArea}
             >
-              <Search className="h-4 w-4 mr-2" />
+              <Search className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Search Area
             </Button>
             <Button 
               variant="outline" 
-              className="w-full justify-start border-black text-black hover:bg-gray-100" 
+              className="w-full justify-start border-black text-black hover:bg-gray-100 text-sm" 
               size="sm"
               onClick={handleViewMap}
             >
-              <Map className="h-4 w-4 mr-2" />
+              <Map className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               View Map
             </Button>
             <Button 
               variant="outline" 
-              className="w-full justify-start border-black text-black hover:bg-gray-100" 
+              className="w-full justify-start border-black text-black hover:bg-gray-100 text-sm" 
               size="sm"
               onClick={handleManageAlerts}
             >
-              <Bell className="h-4 w-4 mr-2" />
+              <Bell className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Manage Alerts
             </Button>
             <Button 
               variant="outline" 
-              className="w-full justify-start border-black text-black hover:bg-gray-100" 
+              className="w-full justify-start border-black text-black hover:bg-gray-100 text-sm" 
               size="sm"
               onClick={handleReportCrime}
             >
-              <AlertTriangle className="h-4 w-4 mr-2" />
+              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Report a Crime
             </Button>
           </CardContent>
@@ -262,30 +262,30 @@ export function DashboardOverview({ stats, loading, onTabChange, primaryLocation
       {/* Top Crime Types */}
       <Card className="border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Top Crime Types</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-base sm:text-lg">Top Crime Types</CardTitle>
+          <CardDescription className="text-sm">
             Most common incidents in your monitored areas
           </CardDescription>
         </CardHeader>
         <CardContent>
           {stats.topCrimeTypes.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {stats.topCrimeTypes.map((crime, index) => (
                 <div key={crime.type} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-medium text-black">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="h-6 w-6 sm:h-8 sm:w-8 bg-gray-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium text-black">
                       {index + 1}
                     </div>
-                    <span className="font-medium text-black">{crime.type}</span>
+                    <span className="font-medium text-black text-sm sm:text-base">{crime.type}</span>
                   </div>
-                  <Badge variant="secondary" className="bg-gray-100 text-black">{crime.count} incidents</Badge>
+                  <Badge variant="secondary" className="bg-gray-100 text-black text-xs">{crime.count} incidents</Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No crime data available yet</p>
+            <div className="text-center py-6 sm:py-8">
+              <BarChart3 className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+              <p className="text-gray-500 text-sm sm:text-base">No crime data available yet</p>
             </div>
           )}
         </CardContent>

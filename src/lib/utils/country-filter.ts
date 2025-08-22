@@ -5,7 +5,7 @@ import { useCountry } from '@/contexts/CountryContext';
  * This ensures all data operations are scoped to the user's country
  */
 export function useCountryFilter() {
-  const { userCountry, error } = useCountry();
+  const { userCountry, error, isCountryLoaded } = useCountry();
 
   const getCountryFilter = () => {
     if (!userCountry) {
@@ -41,6 +41,7 @@ export function useCountryFilter() {
   return {
     userCountry,
     error,
+    isCountryLoaded,
     getCountryFilter,
     getCountryQueryParams,
     getCountryHeaders,

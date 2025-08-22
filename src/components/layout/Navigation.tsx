@@ -43,10 +43,7 @@ function NavigationStructure({
   handleSignOut: () => void;
 }>) {
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/dashboard/search', label: 'Search' },
-    { href: '/dashboard/map', label: 'Map' },
-    { href: '/dashboard/profile', label: 'Profile' }
+    { href: '/dashboard', label: 'Dashboard' }
   ];
 
   const renderNavLinks = (isMobile: boolean = false) => (

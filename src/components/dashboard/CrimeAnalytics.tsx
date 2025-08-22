@@ -15,7 +15,7 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
-import { useCountryFilter } from '@/lib/utils/country-filter';
+import { useCountry } from '@/contexts/CountryContext';
 import { useAuthStore } from '@/lib/auth/auth-store';
 
 interface SearchResult {
@@ -62,9 +62,10 @@ interface AnalyticsData {
 }
 
 export function CrimeAnalytics() {
-  const { userCountry } = useCountryFilter();
+  const { userCountry, isCountryLoaded } = useCountry();
   const { userProfile } = useAuthStore();
 
+  // All hooks must be called at the top level
   const [timeRange] = useState<'month' | 'quarter' | 'year'>('month');
   
   // Search functionality
@@ -85,6 +86,19 @@ export function CrimeAnalytics() {
     totalIncidents: 0,
     averageSeverity: 0
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 CrimeAnalytics: Component mounted/updated:', {
+      hasUserCountry: !!userCountry,
+      userCountryId: userCountry?.id,
+      userCountryName: userCountry?.name,
+      hasUserProfile: !!userProfile,
+      userProfileId: userProfile?.id,
+      userProfileCountryId: userProfile?.country_id,
+      isCountryLoaded
+    });
+  }, [userCountry, userProfile, isCountryLoaded]);
 
   // Memoize fetchAnalyticsData to fix useEffect dependency warning
   const fetchAnalyticsData = useCallback(async () => {
@@ -120,6 +134,18 @@ export function CrimeAnalytics() {
       fetchAnalyticsData();
     }
   }, [userProfile?.id, fetchAnalyticsData]);
+
+  // Show loading state while country data is being fetched
+  if (!isCountryLoaded) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading country data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;

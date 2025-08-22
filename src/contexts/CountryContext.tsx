@@ -28,15 +28,39 @@ export function CountryProvider({ children }: Readonly<{ children: React.ReactNo
   const [error, setError] = useState<string | null>(null);
   const [isCountryLoaded, setIsCountryLoaded] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 CountryProvider: Component mounted');
+    console.log('🔍 CountryProvider: Initial state:', {
+      hasUserProfile: !!userProfile,
+      userId: userProfile?.id,
+      countryId: userProfile?.country_id,
+      fullName: userProfile?.full_name
+    });
+  }, [userProfile]);
+
+  useEffect(() => {
+    console.log('🔍 CountryProvider: User profile changed:', {
+      hasUserProfile: !!userProfile,
+      userId: userProfile?.id,
+      countryId: userProfile?.country_id,
+      fullName: userProfile?.full_name
+    });
+  }, [userProfile]);
+
   useEffect(() => {
     const fetchUserCountry = async () => {
+      console.log('🔍 CountryProvider: Starting country fetch...');
+      
       if (!userProfile?.country_id) {
+        console.log('⚠️ CountryProvider: No country_id in user profile, skipping fetch');
         setIsCountryLoaded(true);
         return;
       }
 
       try {
         setError(null);
+        console.log('🔍 CountryProvider: Fetching country data for ID:', userProfile.country_id);
 
         // Fetch country details from Supabase
         const response = await fetch(`/api/countries/${userProfile.country_id}`);
@@ -46,10 +70,11 @@ export function CountryProvider({ children }: Readonly<{ children: React.ReactNo
         }
 
         const countryData = await response.json();
+        console.log('✅ CountryProvider: Country data fetched successfully:', countryData);
         setUserCountry(countryData);
         setIsCountryLoaded(true);
       } catch (err) {
-        console.error('Error fetching user country:', err);
+        console.error('❌ CountryProvider: Error fetching user country:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch country data');
         setIsCountryLoaded(true);
       }
@@ -64,6 +89,7 @@ export function CountryProvider({ children }: Readonly<{ children: React.ReactNo
     isCountryLoaded,
   }), [userCountry, error, isCountryLoaded]);
 
+  // Always provide a context value, even if empty
   return (
     <CountryContext.Provider value={value}>
       {children}
@@ -74,7 +100,13 @@ export function CountryProvider({ children }: Readonly<{ children: React.ReactNo
 export function useCountry() {
   const context = useContext(CountryContext);
   if (context === undefined) {
-    throw new Error('useCountry must be used within a CountryProvider');
+    // Instead of throwing an error, provide a default context
+    console.warn('⚠️ useCountry: Context not found, providing default values - NEW VERSION');
+    return {
+      userCountry: null,
+      error: 'Country context not available',
+      isCountryLoaded: false
+    };
   }
   return context;
 }

@@ -48,9 +48,25 @@ interface SavedLocationsProps {
   onLocationUpdate?: () => void;
 }
 
-export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: Readonly<SavedLocationsProps>) {
+export function SavedLocations({ 
+  initialViewMode = 'list',
+  onLocationUpdate 
+}: SavedLocationsProps) {
   const { userCountry } = useCountryFilter();
   const { userProfile } = useAuthStore();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 SavedLocations: Component mounted/updated:', {
+      hasUserCountry: !!userCountry,
+      userCountryId: userCountry?.id,
+      userCountryName: userCountry?.name,
+      hasUserProfile: !!userProfile,
+      userProfileId: userProfile?.id,
+      userProfileCountryId: userProfile?.country_id
+    });
+  }, [userCountry, userProfile]);
+
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(null);
@@ -217,44 +233,44 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-black">Saved Locations</h2>
-          <p className="text-gray-600">Manage your monitored addresses and safety zones in {userCountry.name}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-black">Saved Locations</h2>
+          <p className="text-sm sm:text-base text-gray-600">Manage your monitored addresses and safety zones in {userCountry.name}</p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
           {/* View Mode Toggle */}
-          <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-white">
+          <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-white w-full sm:w-auto">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className={`rounded-md ${
+              className={`flex-1 sm:flex-none rounded-md text-sm ${
                 viewMode === 'list' 
                   ? 'bg-black hover:bg-gray-800 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <List className="h-4 w-4 mr-2" />
-              List
+              <span className="hidden xs:inline">List</span>
             </Button>
             <Button
               variant={viewMode === 'map' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('map')}
-              className={`rounded-md ${
+              className={`flex-1 sm:flex-none rounded-md text-sm ${
                 viewMode === 'map' 
                   ? 'bg-black hover:bg-gray-800 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Map className="h-4 w-4 mr-2" />
-              Map
+              <span className="hidden xs:inline">Map</span>
             </Button>
           </div>
           <Button 
             onClick={() => setIsAddingLocation(true)}
-            className="flex items-center space-x-2 bg-black hover:bg-gray-800 text-white"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-black hover:bg-gray-800 text-white text-sm"
           >
             <Plus className="h-4 w-4" />
             <span>Add Location</span>
@@ -266,26 +282,27 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
       {(isAddingLocation?? editingLocation) && (
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">
+            <CardTitle className="text-base sm:text-lg">
               {editingLocation ? 'Edit Location' : 'Add New Location'}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               {editingLocation ? 'Update your location details' : 'Add a new address to monitor'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Location Name</Label>
+                <Label htmlFor="name" className="text-sm">Location Name</Label>
                 <Input
                   id="name"
                   placeholder="e.g., Home, Work, School"
                   value={newLocation.name}
                   onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                  className="text-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="radius">Radius (km)</Label>
+                <Label htmlFor="radius" className="text-sm">Radius (km)</Label>
                 <Input
                   id="radius"
                   type="number"
@@ -294,17 +311,18 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
                   max="50"
                   value={newLocation.radius_km}
                   onChange={(e) => setNewLocation({ ...newLocation, radius_km: parseFloat(e.target.value) })}
+                  className="text-sm"
                 />
               </div>
             </div>
-                         <div>
-               <Label htmlFor="address">Address</Label>
-               <AddressLookup
-                 onAddressSelect={(address) => {
-                   setNewLocation({
-                     ...newLocation,
-                     address: address.display_name,
-                     coordinates: {
+            <div>
+              <Label htmlFor="address" className="text-sm">Address</Label>
+              <AddressLookup
+                onAddressSelect={(address) => {
+                  setNewLocation({
+                    ...newLocation,
+                    address: address.display_name,
+                    coordinates: {
                        lat: parseFloat(address.lat),
                        lng: parseFloat(address.lon)
                      }
@@ -313,11 +331,11 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
                  placeholder="Search for an address..."
                />
              </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
               <Button 
                 onClick={editingLocation ? handleUpdateLocation : handleAddLocation}
                 disabled={!newLocation.name || !newLocation.address}
-                className="bg-black hover:bg-gray-800 text-white"
+                className="bg-black hover:bg-gray-800 text-white text-sm w-full sm:w-auto"
               >
                 {editingLocation ? 'Update Location' : 'Add Location'}
               </Button>
@@ -328,7 +346,7 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
                   setEditingLocation(null);
                   setNewLocation({ name: '', address: '', radius_km: 5.0, coordinates: undefined });
                 }}
-                className="border-black text-black hover:bg-gray-100"
+                className="border-black text-black hover:bg-gray-100 text-sm w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -349,17 +367,17 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
       ) : (
         <>
           {/* Locations Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {locations.map((location) => (
               <Card key={location.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-100 rounded-lg flex items-center justify-center">
                         {getLocationIcon(location.name)}
                       </div>
                       <div>
-                        <CardTitle className="text-base">{location.name}</CardTitle>
+                        <CardTitle className="text-sm sm:text-base">{location.name}</CardTitle>
                         {location.is_primary && (
                           <Badge className="bg-gray-100 text-black text-xs">
                             <Star className="h-3 w-3 mr-1" />
@@ -373,33 +391,34 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditLocation(location)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteLocation(location.id)}
-                        className="text-black hover:text-gray-700"
+                        className="text-black hover:text-gray-700 h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 sm:space-y-3">
                   <div className="flex items-start space-x-2">
-                    <Navigation className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <p className="text-sm text-gray-600">{location.address}</p>
+                    <Navigation className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 mt-0.5" />
+                    <p className="text-xs sm:text-sm text-gray-600">{location.address}</p>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Radius: {location.radius_km}km</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                    <span className="text-xs sm:text-sm text-gray-500">Radius: {location.radius_km}km</span>
                     {!location.is_primary && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSetPrimary(location.id)}
-                        className="border-black text-black hover:bg-gray-100"
+                        className="border-black text-black hover:bg-gray-100 text-xs w-full sm:w-auto"
                       >
                         Set as Primary
                       </Button>
@@ -413,13 +432,13 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: R
           {/* Empty State */}
           {locations.length === 0 && !isAddingLocation && (
             <Card className="border-gray-200 shadow-sm">
-              <CardContent className="text-center py-12">
-                <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-black mb-2">No locations saved</h3>
-                <p className="text-gray-500 mb-4">
+              <CardContent className="text-center py-8 sm:py-12">
+                <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-black mb-2">No locations saved</h3>
+                <p className="text-sm sm:text-base text-gray-500 mb-4">
                   Add your first location to start monitoring safety in your area
                 </p>
-                <Button onClick={() => setIsAddingLocation(true)} className="bg-black hover:bg-gray-800 text-white">
+                <Button onClick={() => setIsAddingLocation(true)} className="bg-black hover:bg-gray-800 text-white text-sm w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Location
                 </Button>
