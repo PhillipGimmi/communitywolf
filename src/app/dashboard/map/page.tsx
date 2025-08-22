@@ -12,10 +12,9 @@ export default function MapPage() {
     <AuthWrapper>
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50">
         <Navigation />
-
+        
         <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
           <div className="space-y-6 sm:space-y-8">
-            {/* Page Header */}
             <div className="text-center">
               <h1 className="text-3xl font-bold text-sky-800 flex items-center justify-center gap-3">
                 <MapPin className="w-8 h-8" />
@@ -26,7 +25,6 @@ export default function MapPage() {
               </p>
             </div>
 
-            {/* Map Controls */}
             <Card className="border-sky-200 shadow-lg">
               <CardHeader className="border-b border-sky-200">
                 <div className="flex items-center justify-between">
@@ -63,7 +61,6 @@ export default function MapPage() {
               </CardContent>
             </Card>
 
-            {/* Map Legend */}
             <Card className="border-sky-200 shadow-lg">
               <CardHeader className="border-b border-sky-200">
                 <CardTitle className="text-sky-800">Map Legend</CardTitle>
@@ -97,18 +94,27 @@ export default function MapPage() {
                   <div>
                     <h3 className="font-semibold text-sky-800 mb-3">Incident Types</h3>
                     <div className="space-y-2 text-sm text-slate-700">
-                      <div>• <strong>Violent Crimes:</strong> Assault, robbery, serious offenses</div>
-                      <div>• <strong>Property Crimes:</strong> Theft, burglary, vandalism</div>
-                      <div>• <strong>Public Order:</strong> Disorder, safety concerns</div>
-                      <div>• <strong>Cyber Crimes:</strong> Online fraud, digital offenses</div>
-                      <div>• <strong>Organized Crime:</strong> Syndicate operations</div>
+                      <div>
+                        <span className="font-bold">Violent Crimes:</span> Assault, robbery, serious offenses
+                      </div>
+                      <div>
+                        <span className="font-bold">Property Crimes:</span> Theft, burglary, vandalism
+                      </div>
+                      <div>
+                        <span className="font-bold">Public Order:</span> Disorder, safety concerns
+                      </div>
+                      <div>
+                        <span className="font-bold">Cyber Crimes:</span> Online fraud, digital offenses
+                      </div>
+                      <div>
+                        <span className="font-bold">Organized Crime:</span> Syndicate operations
+                      </div>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Data Information */}
             <Card className="border-sky-200 shadow-lg">
               <CardHeader className="border-b border-sky-200">
                 <CardTitle className="text-sky-800 flex items-center gap-2">
@@ -127,10 +133,10 @@ export default function MapPage() {
                       Incident reports are generated from web search results and processed by our AI agents to extract location coordinates and categorize incidents.
                     </p>
                     <ul className="text-sm text-slate-600 space-y-1">
-                      <li>• News articles and police reports</li>
-                      <li>• Community safety alerts</li>
-                      <li>• Local authority updates</li>
-                      <li>• Verified incident databases</li>
+                      <li>News articles and police reports</li>
+                      <li>Community safety alerts</li>
+                      <li>Local authority updates</li>
+                      <li>Verified incident databases</li>
                     </ul>
                   </div>
                   <div>
@@ -139,10 +145,10 @@ export default function MapPage() {
                       Our GeoAgent processes search results to generate structured incident data with accurate coordinates and severity ratings.
                     </p>
                     <ul className="text-sm text-slate-600 space-y-1">
-                      <li>• AI-powered location extraction</li>
-                      <li>• Automatic incident categorization</li>
-                      <li>• Severity assessment algorithms</li>
-                      <li>• Real-time data updates</li>
+                      <li>AI-powered location extraction</li>
+                      <li>Automatic incident categorization</li>
+                      <li>Severity assessment algorithms</li>
+                      <li>Real-time data updates</li>
                     </ul>
                   </div>
                 </div>

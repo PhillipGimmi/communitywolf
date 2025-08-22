@@ -23,8 +23,8 @@ export interface SearchAgentRequest {
  * 4. Triggers background GeoAgent processing
  */
 export class SearchAgent {
-  private openRouterApiKey: string;
-  private openRouterBaseUrl: string;
+  private readonly openRouterApiKey: string;
+  private readonly openRouterBaseUrl: string;
 
   constructor() {
     this.openRouterApiKey = process.env.OPENROUTER_API_KEY || '';

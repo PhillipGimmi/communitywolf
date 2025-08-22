@@ -21,10 +21,10 @@ import { SavedLocation, DashboardStats } from '@/types/dashboard';
 import { useEffect } from 'react';
 
 interface DashboardOverviewProps {
-  stats: DashboardStats;
-  loading: boolean;
-  onTabChange: (tab: string) => void;
-  primaryLocation: SavedLocation | null;
+  readonly stats: DashboardStats;
+  readonly loading: boolean;
+  readonly onTabChange: (tab: string) => void;
+  readonly primaryLocation: SavedLocation | null;
 }
 
 export function DashboardOverview({ stats, loading, onTabChange, primaryLocation }: DashboardOverviewProps) {

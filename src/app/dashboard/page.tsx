@@ -275,14 +275,19 @@ export default function DashboardPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
     
+    // Shared function to render DashboardOverview to eliminate duplication
+    const renderDashboardOverview = () => (
+      <DashboardOverview 
+        stats={dashboardData.stats}
+        loading={dashboardData.loading}
+        onTabChange={setActiveTab}
+        primaryLocation={primaryLocation}
+      />
+    );
+    
     switch (activeTab) {
       case 'overview':
-        return <DashboardOverview 
-          stats={dashboardData.stats}
-          loading={dashboardData.loading}
-          onTabChange={setActiveTab}
-          primaryLocation={primaryLocation}
-        />;
+        return renderDashboardOverview();
       case 'locations':
         return <SavedLocations 
           initialViewMode={viewParam === 'map' ? 'map' : 'list'}
@@ -302,12 +307,8 @@ export default function DashboardPage() {
       case 'my-reports':
         return <MyReports />;
       default:
-        return <DashboardOverview 
-          stats={dashboardData.stats}
-          loading={dashboardData.loading}
-          onTabChange={setActiveTab}
-          primaryLocation={primaryLocation}
-        />;
+        // Default to overview tab
+        return renderDashboardOverview();
     }
   };
 

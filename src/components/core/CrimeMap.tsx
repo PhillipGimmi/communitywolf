@@ -9,7 +9,7 @@ import type { Map, Layer } from 'leaflet';
 let L: typeof import('leaflet');
 
 interface CrimeMapProps {
-  reports: CrimeReport[];
+  readonly reports: CrimeReport[];
 }
 
 export function CrimeMap({ reports }: CrimeMapProps) {

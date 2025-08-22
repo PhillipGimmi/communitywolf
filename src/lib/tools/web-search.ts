@@ -70,10 +70,10 @@ async function searchWithSerpAPI(query: string, apiKey: string): Promise<WebSear
   if (data.organic_results) {
     for (const result of data.organic_results) {
       results.push({
-        title: result.title || 'No title',
-        url: result.link || '',
-        snippet: result.snippet || 'No description available',
-        source: result.source || 'Unknown source'
+        title: result.title ?? 'No title',
+        url: result.link ?? '',
+        snippet: result.snippet ?? 'No description available',
+        source: result.source ?? 'Unknown source'
       });
     }
   }

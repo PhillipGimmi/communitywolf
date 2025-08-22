@@ -45,7 +45,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (coordinates: { lat: numb
           const data = await response.json();
           console.log('🔧 MapClickHandler: API response data:', data);
           
-          const address = data.result?.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          const address = data.result?.display_name ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
           console.log('🔧 MapClickHandler: Resolved address:', address);
           
           onMapClick({ lat, lng }, address);
@@ -78,7 +78,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (coordinates: { lat: numb
   return null;
 }
 
-export default function CrimeReportMap({ onMapClick, initialCoordinates, userCountry, isFullScreen, onAddressSelect, radiusKm }: CrimeReportMapProps) {
+export default function CrimeReportMap({ onMapClick, initialCoordinates, userCountry, isFullScreen, onAddressSelect, radiusKm }: Readonly<CrimeReportMapProps>) {
   const [isClient, setIsClient] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>([-26.2041, 28.0473]); // Default Johannesburg
 
@@ -101,7 +101,7 @@ export default function CrimeReportMap({ onMapClick, initialCoordinates, userCou
         'JP': [36.2048, 138.2529],  // Japan
       };
 
-      const center = countryCenters[userCountry.code] || [-26.2041, 28.0473];
+      const center = countryCenters[userCountry.code] ?? [-26.2041, 28.0473];
       setMapCenter(center);
     }
     
@@ -110,7 +110,7 @@ export default function CrimeReportMap({ onMapClick, initialCoordinates, userCou
   
   // Update map center when initialCoordinates change (e.g., when address is selected from dropdown)
   useEffect(() => {
-    if (initialCoordinates && initialCoordinates.lat && initialCoordinates.lng) {
+    if (initialCoordinates?.lat && initialCoordinates?.lng) {
       console.log('🔧 CrimeReportMap: Updating map center to initialCoordinates:', initialCoordinates);
       setMapCenter([initialCoordinates.lat, initialCoordinates.lng]);
     }

@@ -17,7 +17,6 @@ import {
   Save,
   X,
   CalendarIcon,
-
 } from 'lucide-react';
 import { AddressLookup } from '@/components/ui/address-lookup';
 import { useCountryFilter } from '@/lib/utils/country-filter';
@@ -38,16 +37,16 @@ const CrimeReportMap = dynamic(() => import('./CrimeReportMap').then(mod => mod.
 });
 
 interface CrimeReportData {
-  incident_type: string;
-  severity_level: number;
-  title: string;
-  description: string;
-  address: string;
-  coordinates?: { lat: number; lng: number };
-  radius_km: number;
-  incident_date: string;
-  incident_time: string;
-  reported_by: string;
+  readonly incident_type: string;
+  readonly severity_level: number;
+  readonly title: string;
+  readonly description: string;
+  readonly address: string;
+  readonly coordinates?: { lat: number; lng: number };
+  readonly radius_km: number;
+  readonly incident_date: string;
+  readonly incident_time: string;
+  readonly reported_by: string;
 }
 
 const CRIME_TYPES = [
@@ -64,6 +63,14 @@ const SEVERITY_LEVELS = [
   { value: 5, label: 'Emergency - Immediate danger', color: 'bg-black text-white' }
 ];
 
+// Shared utility function to eliminate duplication
+const formatDateForInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export function CrimeReport() {
   const { userCountry } = useCountryFilter();
   const [reportData, setReportData] = useState<CrimeReportData>({
@@ -74,13 +81,7 @@ export function CrimeReport() {
     address: '',
     coordinates: undefined,
     radius_km: 1.0,
-    incident_date: (() => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    })(),
+    incident_date: formatDateForInput(new Date()),
     incident_time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
     reported_by: ''
   });
@@ -130,7 +131,7 @@ export function CrimeReport() {
     setReportData(prev => ({
       ...prev,
       coordinates,
-      address: address || prev.address
+      address: address ?? prev.address
     }));
     
     console.log('🔧 CrimeReport: Updated form with coordinates:', coordinates, 'and address:', address);
@@ -155,15 +156,9 @@ export function CrimeReport() {
       address: '',
       coordinates: undefined,
       radius_km: 1.0,
-      incident_date: (() => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      })(),
+      incident_date: formatDateForInput(new Date()),
       incident_time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-      reported_by: `User in ${userCountry?.name || 'Unknown'}`
+      reported_by: `User in ${userCountry?.name?? 'Unknown'}`
     });
     setMapCoordinates(null);
   };
@@ -176,13 +171,11 @@ export function CrimeReport() {
       alert('Please fill in all required fields');
       return;
     }
-
     // Validate that either address or coordinates are provided
     if (!reportData.address.trim() && !reportData.coordinates) {
       alert('Please provide either an address or select a location on the map');
       return;
     }
-
     setIsSubmitting(true);
     try {
       console.log('🔧 CrimeReport: Submitting crime report:', reportData);
@@ -199,7 +192,6 @@ export function CrimeReport() {
         radius_km: reportData.radius_km,
         keywords: [reportData.incident_type, reportData.severity_level.toString()]
       };
-
       console.log('🔧 CrimeReport: Submitting to database:', submissionData);
       
       // Submit to database
@@ -231,8 +223,6 @@ export function CrimeReport() {
      }
    };
 
-
-
   if (!userCountry) {
     return (
       <div className="space-y-6">
@@ -253,10 +243,9 @@ export function CrimeReport() {
         </div>
         <Badge variant="secondary" className="bg-gray-100 text-gray-800">
           <AlertTriangle className="h-4 w-4 mr-2 text-gray-800" />
-          Emergency: Call {userCountry.emergency_number || '911'} for immediate danger
+          Emergency: Call {userCountry.emergency_number ?? '911'} for immediate danger
         </Badge>
       </div>
-
              {/* Success/Error Messages */}
        {submitSuccess && (
          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -287,7 +276,6 @@ export function CrimeReport() {
            </div>
          </div>
        )}
-
        {submitError && (
          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
            <div className="flex items-center">
@@ -317,7 +305,6 @@ export function CrimeReport() {
            </div>
          </div>
        )}
-
        <form onSubmit={handleSubmit} className="space-y-6">
          {/* Crime Details */}
          <Card className="border-gray-200 shadow-sm">
@@ -367,7 +354,6 @@ export function CrimeReport() {
                 </Select>
               </div>
             </div>
-
             <div className="space-y-3">
               <Label htmlFor="title" className="text-sm font-medium text-gray-700">Brief Title *</Label>
               <Input
@@ -379,7 +365,6 @@ export function CrimeReport() {
                 className="h-11"
               />
             </div>
-
             <div className="space-y-3">
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">Detailed Description</Label>
               <Textarea
@@ -392,7 +377,6 @@ export function CrimeReport() {
                 className="resize-none"
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <Label htmlFor="incident_date" className="text-sm font-medium text-gray-700">Date of Incident *</Label>
@@ -421,20 +405,13 @@ export function CrimeReport() {
                       selected={reportData.incident_date ? new Date(reportData.incident_date) : undefined}
                                              onSelect={(date) => {
                         if (date) {
-                          // Format date as YYYY-MM-DD without timezone conversion
-                          const year = date.getFullYear();
-                          const month = String(date.getMonth() + 1).padStart(2, '0');
-                          const day = String(date.getDate()).padStart(2, '0');
-                          const formattedDate = `${year}-${month}-${day}`;
-                          
                           setReportData(prev => ({
                             ...prev,
-                            incident_date: formattedDate
+                            incident_date: formatDateForInput(date)
                           }));
                         }
                       }}
                       disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -455,7 +432,7 @@ export function CrimeReport() {
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                        <SelectItem key={`hour-${i.toString().padStart(2, '0')}`} value={i.toString().padStart(2, '0')}>
                           {i.toString().padStart(2, '0')}
                         </SelectItem>
                       ))}
@@ -474,7 +451,7 @@ export function CrimeReport() {
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 60 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                        <SelectItem key={`minute-${i.toString().padStart(2, '0')}`} value={i.toString().padStart(2, '0')}>
                           {i.toString().padStart(2, '0')}
                         </SelectItem>
                       ))}
@@ -485,7 +462,6 @@ export function CrimeReport() {
             </div>
           </CardContent>
         </Card>
-
         {/* Location Selection */}
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
@@ -502,7 +478,6 @@ export function CrimeReport() {
                 onChange={(value) => setReportData(prev => ({ ...prev, address: value }))}
               />
             </div>
-
             <div className="space-y-3">
               <Label htmlFor="radius" className="text-sm font-medium text-gray-700">Radius (km) *</Label>
               <Select 
@@ -522,7 +497,6 @@ export function CrimeReport() {
               </Select>
               <p className="text-sm text-gray-500">Select the radius around the incident location</p>
             </div>
-
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Button
@@ -549,7 +523,6 @@ export function CrimeReport() {
             </div>
           </CardContent>
         </Card>
-
                  {/* Submit Section */}
          <div className="flex items-center justify-between pt-6">
            <div className="text-sm text-gray-600 space-y-1">
@@ -589,7 +562,6 @@ export function CrimeReport() {
           </div>
         </div>
       </form>
-
       {/* Full Screen Map Drawer */}
       {showMap && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -623,7 +595,6 @@ export function CrimeReport() {
                 </Button>
               </div>
             </div>
-
             {/* Map Container */}
             <div className="flex-1 relative">
                                                                                         <CrimeReportMap
@@ -646,7 +617,6 @@ export function CrimeReport() {
                  radiusKm={reportData.radius_km}
                />
             </div>
-
             {/* Map Footer */}
             <div className="p-4 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between">

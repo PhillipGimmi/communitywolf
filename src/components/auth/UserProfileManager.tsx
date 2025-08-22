@@ -35,7 +35,7 @@ interface UserProfileManagerProps {
   userId: string;
 }
 
-export function UserProfileManager({ userId }: UserProfileManagerProps) {
+export function UserProfileManager({ userId }: Readonly<UserProfileManagerProps>) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -181,7 +181,7 @@ export function UserProfileManager({ userId }: UserProfileManagerProps) {
                     className="mt-1"
                   />
                 ) : (
-                  <p className="mt-1 text-slate-900">{profile.phone_number || 'Not provided'}</p>
+                  <p className="mt-1 text-slate-900">{profile.phone_number ?? 'Not provided'}</p>
                 )}
               </div>
             </div>
@@ -192,8 +192,8 @@ export function UserProfileManager({ userId }: UserProfileManagerProps) {
                   <Shield className="w-4 h-4" />
                   Role
                 </Label>
-                <p className="mt-1 text-slate-900 capitalize">{profile.role?.name || 'User'}</p>
-                <p className="text-xs text-slate-500 mt-1">{profile.role?.description}</p>
+                <p className="mt-1 text-slate-900 capitalize">{profile.role?.name ?? 'User'}</p>
+                <p className="text-xs text-slate-500 mt-1">{profile.role?.description ?? 'No description available'}</p>
               </div>
 
               <div>
@@ -201,8 +201,8 @@ export function UserProfileManager({ userId }: UserProfileManagerProps) {
                   <Globe className="w-4 h-4" />
                   Country
                 </Label>
-                <p className="mt-1 text-slate-900">{profile.country?.name}</p>
-                <p className="text-xs text-slate-500 mt-1">Code: {profile.country?.code}</p>
+                <p className="mt-1 text-slate-900">{profile.country?.name ?? 'Not specified'}</p>
+                <p className="text-xs text-slate-500 mt-1">Code: {profile.country?.code ?? 'N/A'}</p>
               </div>
 
               <div>

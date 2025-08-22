@@ -68,7 +68,7 @@ export async function requireAuth() {
 export async function requireRole(minLevel: number) {
   const profile = await getUserProfile();
   
-  if (!profile || !profile.role || profile.role.level < minLevel) {
+  if (!profile?.role?.level || profile.role.level < minLevel) {
     throw new Error('Insufficient permissions');
   }
   

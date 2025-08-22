@@ -33,18 +33,21 @@ interface SearchResponse {
   searchTime: number;
 }
 
+type SeverityLevel = 'low' | 'medium' | 'high' | 'critical';
+type AlertType = 'crime' | 'safety' | 'weather' | 'traffic' | 'emergency';
+
 interface SafetyAlert {
   id: string;
   title: string;
   description: string;
   shortDescription?: string;
   longDescription?: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: SeverityLevel;
   location: string;
   timestamp: string;
   source: string;
   sourceUrl?: string;
-  alertType: 'crime' | 'safety' | 'weather' | 'traffic' | 'emergency';
+  alertType: AlertType;
   isRead: boolean;
   isSaved: boolean;
   distance?: number;
@@ -74,10 +77,26 @@ interface CrimeReport {
   longitude?: number;
 }
 
+// Helper function to get Badge className based on severity
+function getBadgeClassName(severity: SafetyAlert['severity']): string {
+  switch (severity) {
+    case 'critical':
+      return 'bg-red-100 text-red-800';
+    case 'high':
+      return 'bg-orange-100 text-orange-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800';
+    default:
+      return 'bg-green-100 text-green-800';
+  }
+}
+
 export function RecentAlerts() {
   const { userProfile } = useAuthStore();
   const [alerts, setAlerts] = useState<SafetyAlert[]>([]);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'saved' | 'critical'>('all');
+type FilterType = 'all' | 'unread' | 'saved' | 'critical';
+
+  const [filter, setFilter] = useState<FilterType>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([]);
@@ -182,7 +201,7 @@ export function RecentAlerts() {
       if (savedLocations.length > 0) {
         // Find primary location first, then use first available
         const primaryLocation = savedLocations.find(loc => loc.is_primary);
-        const locationToUse = primaryLocation || savedLocations[0];
+        const locationToUse = primaryLocation ?? savedLocations[0];
         
         console.log('📍 Selected location to use:', locationToUse);
         
@@ -202,7 +221,7 @@ export function RecentAlerts() {
         location: locationData.location,
         radius: locationData.radius,
         coordinates: locationData.coordinates,
-        userCountry: userProfile?.country_id
+        userCountry: userProfile?.country_id ?? 'South Africa'
       });
 
       // Generate intelligent alerts based on user's saved locations
@@ -210,7 +229,7 @@ export function RecentAlerts() {
         location: locationData.location,
         radius: locationData.radius,
         coordinates: locationData.coordinates,
-        userCountry: userProfile?.country_id || 'South Africa'
+        userCountry: userProfile?.country_id ?? 'South Africa'
       };
       
       console.log('🚨 Request body being sent to /api/alerts/generate:', JSON.stringify(requestBody, null, 2));
@@ -235,8 +254,8 @@ export function RecentAlerts() {
         console.log('✅ Response status:', response.status);
         console.log('✅ Response headers:', Object.fromEntries(response.headers.entries()));
         console.log('✅ Parsed alerts array:', generatedAlerts.alerts);
-        console.log('✅ Number of alerts returned:', generatedAlerts.alerts?.length || 0);
-        return generatedAlerts.alerts || [];
+        console.log('✅ Number of alerts returned:', generatedAlerts.alerts?.length ?? 0);
+        return generatedAlerts.alerts ?? [];
       } else {
         console.error('❌ Alerts API returned error status:', response.status);
         const errorText = await response.text();
@@ -291,7 +310,7 @@ export function RecentAlerts() {
       
       // Combine and sort alerts by timestamp
       const allAlerts = [...crimeReports, ...searchAlerts, ...weatherAlerts];
-      const sortedAlerts = allAlerts.sort((a, b) => 
+      const sortedAlerts = allAlerts.toSorted((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       
@@ -354,7 +373,7 @@ export function RecentAlerts() {
       severity: 'medium',
       location: 'Search Result',
       timestamp: new Date().toISOString(),
-      source: result.source || 'Search',
+      source: result.source ?? 'Search',
       sourceUrl: result.url,
       alertType: 'safety',
       isRead: false,
@@ -476,7 +495,7 @@ export function RecentAlerts() {
           placeholder="Search alerts..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
         <Button onClick={handleSearch} disabled={isSearching}>
           {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -488,16 +507,23 @@ export function RecentAlerts() {
         <div className="bg-blue-50 p-4 rounded-lg">
           <h3 className="font-medium text-blue-900 mb-2">Search Results</h3>
           <div className="space-y-2">
-            {searchResults.results.map((result, index) => (
-              <div
-                key={index}
-                className="p-3 bg-white rounded border cursor-pointer hover:bg-gray-50"
+            {searchResults.results.map((result) => (
+              <button
+                key={`${result.title}-${result.source}`}
+                className="w-full p-3 bg-white rounded border cursor-pointer hover:bg-gray-50 text-left"
                 onClick={() => handleSearchResultClick(result)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSearchResultClick(result);
+                  }
+                }}
+                aria-label={`Select search result: ${result.title}`}
               >
                 <h4 className="font-medium text-gray-900">{result.title}</h4>
                 <p className="text-sm text-gray-600">{result.snippet}</p>
                 <p className="text-xs text-gray-500 mt-1">Source: {result.source}</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -523,12 +549,7 @@ export function RecentAlerts() {
                         <h3 className="text-lg font-semibold text-gray-900">{alert.title}</h3>
                         <Badge 
                           variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
-                          className={`${
-                            alert.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                            alert.severity === 'high' ? 'bg-orange-100 text-orange-800' :
-                            alert.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}
+                          className={getBadgeClassName(alert.severity)}
                         >
                           {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
                         </Badge>
@@ -581,7 +602,7 @@ export function RecentAlerts() {
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <h4 className="font-medium text-gray-900 mb-2">Detailed Information</h4>
                         <p className="text-sm text-gray-700 mb-3">
-                          {alert.longDescription || alert.description}
+                          {alert.longDescription ?? alert.description}
                         </p>
                         
                         {/* Source Information */}

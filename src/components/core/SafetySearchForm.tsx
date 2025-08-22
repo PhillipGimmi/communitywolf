@@ -41,8 +41,8 @@ export function SafetySearchForm() {
       }
 
       const data = await response.json();
-      setResults(data.results || []);
-      setSummary(data.summary || '');
+      setResults(data.results ?? []);
+      setSummary(data.summary ?? '');
     } catch {
       setError('Failed to search. Please try again.');
     } finally {
@@ -64,7 +64,7 @@ export function SafetySearchForm() {
           />
           <Button 
             type="submit"
-            disabled={isLoading || !query.trim()}
+            disabled={isLoading?? !query.trim()}
             className="bg-sky-600 hover:bg-sky-700 text-white border-sky-600 hover:border-sky-700 px-6"
           >
             {isLoading ? (
@@ -123,8 +123,8 @@ export function SafetySearchForm() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {results.map((result, index) => (
-                <div key={index} className="p-3 border border-slate-200 rounded-md">
+              {results.map((result) => (
+                <div key={`${result.title}-${result.url}`} className="p-3 border border-slate-200 rounded-md">
                   <h4 className="font-medium text-slate-800 mb-1">{result.title}</h4>
                   <p className="text-sm text-slate-600 mb-2">{result.snippet}</p>
                   <a

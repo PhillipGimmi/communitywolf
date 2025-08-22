@@ -54,25 +54,45 @@ export function JsonDownload() {
     if (!latestData) return;
     
     const jsonString = JSON.stringify(latestData.data, null, 2);
-    const newWindow = window.open();
-    if (newWindow) {
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>Crime Reports JSON - ${latestData.filename}</title>
-            <style>
-              body { font-family: monospace; margin: 20px; background: #f5f5f5; }
-              pre { background: white; padding: 20px; border-radius: 8px; overflow: auto; }
-            </style>
-          </head>
-          <body>
-            <h2>Crime Reports JSON</h2>
-            <p><strong>File:</strong> ${latestData.filename}</p>
-            <p><strong>Records:</strong> ${latestData.count}</p>
-            <pre>${jsonString}</pre>
-          </body>
-        </html>
-      `);
+    
+    // Create HTML content with proper escaping
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Crime Reports JSON - ${latestData.filename.replace(/[<>]/g, '')}</title>
+          <style>
+            body { font-family: monospace; margin: 20px; background: #f5f5f5; }
+            pre { background: white; padding: 20px; border-radius: 8px; overflow: auto; max-height: 80vh; }
+            h2 { color: #333; }
+            p { color: #666; }
+          </style>
+        </head>
+        <body>
+          <h2>Crime Reports JSON</h2>
+          <p><strong>File:</strong> ${latestData.filename.replace(/[<>]/g, '')}</p>
+          <p><strong>Records:</strong> ${latestData.count}</p>
+          <pre>${jsonString.replace(/[<>]/g, '')}</pre>
+        </body>
+      </html>
+    `;
+    
+    // Use a data URL approach to avoid deprecated document.write
+    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+    const newWindow = window.open(dataUrl, '_blank');
+    
+    if (!newWindow) {
+      // Fallback: use blob URL approach if data URL fails
+      try {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        // Clean up the blob URL after a delay
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } catch (error) {
+        console.warn('Failed to open JSON in browser:', error);
+        // Final fallback: just show the JSON in an alert (not ideal but functional)
+        alert(`JSON Data (${latestData.count} records):\n\n${jsonString.substring(0, 1000)}${jsonString.length > 1000 ? '...' : ''}`);
+      }
     }
   };
 

@@ -13,7 +13,7 @@ interface SignupFormProps {
   onToggleMode: () => void;
 }
 
-export function SignupForm({ onToggleMode }: SignupFormProps) {
+export function SignupForm({ onToggleMode }: Readonly<SignupFormProps>) {
   const [countryCode, setCountryCode] = useState('ZA');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,7 +33,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     if (password.length >= 8) score++;
     if (/[a-z]/.test(password)) score++;
     if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
     
     if (score <= 2) setPasswordStrength('weak');
@@ -57,6 +57,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
       case 'strong': return 'Strong';
       default: return '';
     }
+  };
+
+  // Extract nested ternary into independent function for better readability
+  const getPasswordStrengthBarClasses = () => {
+    if (passwordStrength === 'weak') return 'bg-red-500 w-1/3';
+    if (passwordStrength === 'medium') return 'bg-yellow-500 w-2/3';
+    return 'bg-green-500 w-full';
   };
 
   const passwordsMatch = password === confirmPassword && password.length > 0;
@@ -157,11 +164,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2">
                   <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      passwordStrength === 'weak' ? 'bg-red-500 w-1/3' :
-                      passwordStrength === 'medium' ? 'bg-yellow-500 w-2/3' :
-                      'bg-green-500 w-full'
-                    }`}
+                    className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthBarClasses()}`}
                   />
                 </div>
               </div>

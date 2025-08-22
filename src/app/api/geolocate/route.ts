@@ -5,8 +5,8 @@ import { GeoAgent } from '@/lib/agents/geo-agent';
 import { WebSearchResult } from '@/lib/tools/web-search';
 
 interface GeolocateRequest {
-  query: string;
-  searchResults: WebSearchResult[];
+  readonly query: string;
+  readonly searchResults: WebSearchResult[];
 }
 
 export async function POST(request: NextRequest) {
@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     // Initialize GeoAgent
     const geoAgent = new GeoAgent();
     
-    // Process the request
     const result = await geoAgent.process({ query, searchResults });
     
     if (result.success) {

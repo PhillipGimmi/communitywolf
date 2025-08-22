@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initPromise = initialize();
     
     // Log the promise for debugging
-    console.log('🔧 AuthProvider: Initialize promise created:', !!initPromise);
+    console.log('🔧 AuthProvider: Initialize promise created:', initPromise instanceof Promise);
     
     // Fallback timeout to prevent infinite loading
     const fallbackTimeout = setTimeout(() => {

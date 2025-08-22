@@ -5,8 +5,8 @@ import { SearchResult } from '@/types/safety';
 import { formatDistanceToNow } from 'date-fns';
 
 interface SearchResultsProps {
-  result: SearchResult | null;
-  isLoading: boolean;
+  readonly result: SearchResult | null;
+  readonly isLoading: boolean;
 }
 
 export function SearchResults({ result, isLoading }: SearchResultsProps) {
@@ -58,9 +58,9 @@ export function SearchResults({ result, isLoading }: SearchResultsProps) {
             </h3>
             
             <div className="space-y-3">
-              {result.foundItems.map((item, index) => (
+              {result.foundItems.map((item) => (
                 <div 
-                  key={index}
+                  key={`${item.title}-${item.url}`}
                   className="border rounded-lg p-3 hover:bg-muted/50 transition-colors"
                 >
                   <div className="space-y-2">

@@ -18,7 +18,7 @@ function usePasswordValidation(password: string, confirmPassword: string) {
   // Password requirements
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
+  const hasNumber = /\d/.test(password);
   const hasSpecial = /[^A-Za-z0-9]/.test(password);
   const hasMinLength = password.length >= 8;
   
@@ -58,7 +58,7 @@ function useFormValidation(fullName: string, email: string, countryCode: string,
 }
 
 // Password Strength Display Component
-function PasswordStrengthDisplay({ passwordValidation }: { passwordValidation: ReturnType<typeof usePasswordValidation> }) {
+function PasswordStrengthDisplay({ passwordValidation }: { readonly passwordValidation: ReturnType<typeof usePasswordValidation> }) {
   const getPasswordStrengthBarColor = (score: number) => {
     if (score <= 2) return 'bg-red-500';
     if (score <= 4) return 'bg-yellow-500';
@@ -177,7 +177,7 @@ export function SecureSignupForm() {
     // Debug form data
     console.log('Form data entries:');
     for (const [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
+      console.log(`${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`);
     }
     
     try {

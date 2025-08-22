@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   text?: string;
 }
 
-export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className, text }: Readonly<LoadingSpinnerProps>) {
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
@@ -14,7 +14,10 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
   };
 
   return (
-    <div className={cn('flex flex-col items-center justify-center space-y-2', className)}>
+    <div 
+      data-testid="loading-spinner"
+      className={cn('flex flex-col items-center justify-center space-y-2', className)}
+    >
       <div
         className={cn(
           'animate-spin rounded-full border-2 border-gray-300 border-t-gray-900',
@@ -28,7 +31,7 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
   );
 }
 
-export function ButtonLoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
+export function ButtonLoadingSpinner({ size = 'sm' }: Readonly<{ size?: 'sm' | 'md' | 'lg' }>) {
   const sizeClasses = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
@@ -45,7 +48,7 @@ export function ButtonLoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg
   );
 }
 
-export function FullPageLoadingSpinner({ text = 'Loading...' }: { text?: string }) {
+export function FullPageLoadingSpinner({ text = 'Loading...' }: Readonly<{ text?: string }>) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center">

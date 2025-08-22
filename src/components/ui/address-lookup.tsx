@@ -32,9 +32,9 @@ interface AddressLookupProps {
   onChange?: (value: string) => void;
 }
 
-export function AddressLookup({ onAddressSelect, placeholder = "Search for an address...", className = "", value, onChange }: AddressLookupProps) {
+export function AddressLookup({ onAddressSelect, placeholder = "Search for an address...", className = "", value, onChange }: Readonly<AddressLookupProps>) {
   const { userCountry } = useCountryFilter();
-  const [query, setQuery] = useState(value || '');
+  const [query, setQuery] = useState(value ?? '');
   const [results, setResults] = useState<AddressResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -62,7 +62,7 @@ export function AddressLookup({ onAddressSelect, placeholder = "Search for an ad
         console.log('🔧 AddressLookup: API response:', data);
         console.log('🔧 AddressLookup: Results count:', data.results?.length);
         
-        const results = data.results || [];
+        const results = data.results ?? [];
         console.log('🔧 AddressLookup: Setting results:', results);
         console.log('🔧 AddressLookup: Setting showResults to:', results.length > 0);
         
@@ -236,7 +236,7 @@ export function AddressLookup({ onAddressSelect, placeholder = "Search for an ad
                        {formatAddress(result)}
                      </div>
                      <div className="text-sm text-gray-500 truncate">
-                       {result.address.city || result.address.town || result.address.suburb}, {result.address.state} {result.address.postcode}
+                       {result.address.city ?? result.address.town ?? result.address.suburb}, {result.address.state} {result.address.postcode}
                      </div>
                      <div className="text-xs text-gray-400 mt-1">
                        Coordinates: {parseFloat(result.lat).toFixed(4)}, {parseFloat(result.lon).toFixed(4)}

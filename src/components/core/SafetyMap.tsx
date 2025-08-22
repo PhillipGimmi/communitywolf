@@ -91,7 +91,7 @@ export function SafetyMap() {
         <div className="absolute inset-0 opacity-10">
           <div className="grid grid-cols-8 grid-rows-8 h-full">
             {Array.from({ length: 64 }).map((_, i) => (
-              <div key={i} className="border border-sky-200"></div>
+              <div key={`grid-cell-${Math.floor(i / 8)}-${i % 8}`} className="border border-sky-200"></div>
             ))}
           </div>
         </div>
@@ -167,8 +167,8 @@ export function SafetyMap() {
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span>{new Date(incident.datetime).toLocaleDateString()}</span>
                   <div className="flex gap-1">
-                    {incident.keywords.slice(0, 3).map((keyword, i) => (
-                      <span key={i} className="px-2 py-1 bg-slate-100 rounded">
+                    {incident.keywords.slice(0, 3).map((keyword) => (
+                      <span key={`${incident.newsID}-keyword-${keyword}`} className="px-2 py-1 bg-slate-100 rounded">
                         {keyword}
                       </span>
                     ))}

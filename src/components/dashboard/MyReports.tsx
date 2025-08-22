@@ -38,7 +38,7 @@ export function MyReports() {
         const response = await fetch(`/api/crime/reports?countryId=${userProfile.country_id}&userId=${userProfile.id}&limit=100`);
         if (response.ok) {
           const reports = await response.json();
-          setAllReports(reports || []);
+          setAllReports(reports ?? []);
         } else {
           throw new Error('Failed to fetch reports');
         }
@@ -120,10 +120,10 @@ export function MyReports() {
           <div className="text-right">
             <div className="text-sm text-gray-500">Your Role</div>
             <Badge variant="outline" className="text-sm">
-              {userProfile?.role?.name || 'citizen'}
+              {userProfile?.role?.name ?? 'citizen'}
             </Badge>
             <div className="text-xs text-gray-400 mt-1">
-              Level {userProfile?.role?.level || 1}
+              Level {userProfile?.role?.level ?? 1}
             </div>
           </div>
         </div>
@@ -213,7 +213,7 @@ export function MyReports() {
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4 text-gray-600" />
-                        <span>{report.address || 'No address provided'}</span>
+                        <span>{report.address ?? 'No address provided'}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4 text-gray-600" />
@@ -241,17 +241,17 @@ export function MyReports() {
         <CardContent>
           <div className="space-y-3">
             <div>
-              <strong>Current Role:</strong> {userProfile?.role?.name || 'citizen'}
+              <strong>Current Role:</strong> {userProfile?.role?.name ?? 'citizen'}
             </div>
             <div>
-              <strong>Level:</strong> {userProfile?.role?.level || 1}
+              <strong>Level:</strong> {userProfile?.role?.level ?? 1}
             </div>
             <div>
-              <strong>Description:</strong> {userProfile?.role?.description || 'Regular community member with basic reporting and viewing capabilities'}
+              <strong>Description:</strong> {userProfile?.role?.description ?? 'Regular community member with basic reporting and viewing capabilities'}
             </div>
             <div className="pt-2">
               <p className="text-sm text-gray-600">
-                                 As a {userProfile?.role?.name || 'citizen'}, you can create crime reports that will be reviewed by authorities. 
+                                 As a {userProfile?.role?.name ?? 'citizen'}, you can create crime reports that will be reviewed by authorities. 
                  Your reports start with &ldquo;pending&rdquo; status and will be verified by users with higher permissions.
               </p>
             </div>

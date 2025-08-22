@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [supabase.auth, fetchUserProfile]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
@@ -103,14 +103,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error signing out:', error);
     }
-  };
+  }, [supabase.auth]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     profile,
     loading,
     signOut,
-  };
+  }), [user, profile, loading, signOut]);
 
   return (
     <AuthContext.Provider value={value}>

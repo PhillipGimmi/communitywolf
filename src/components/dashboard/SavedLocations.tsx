@@ -48,7 +48,7 @@ interface SavedLocationsProps {
   onLocationUpdate?: () => void;
 }
 
-export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: SavedLocationsProps) {
+export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: Readonly<SavedLocationsProps>) {
   const { userCountry } = useCountryFilter();
   const { userProfile } = useAuthStore();
   const [locations, setLocations] = useState<SavedLocation[]>([]);
@@ -263,7 +263,7 @@ export function SavedLocations({ initialViewMode = 'list', onLocationUpdate }: S
       </div>
 
       {/* Add/Edit Location Form */}
-      {(isAddingLocation || editingLocation) && (
+      {(isAddingLocation?? editingLocation) && (
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">

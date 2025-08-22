@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth/auth-store';
 
 interface Country {
@@ -22,7 +22,7 @@ interface CountryContextType {
 
 const CountryContext = createContext<CountryContextType | undefined>(undefined);
 
-export function CountryProvider({ children }: { children: React.ReactNode }) {
+export function CountryProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const { userProfile } = useAuthStore();
   const [userCountry, setUserCountry] = useState<Country | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,18 +52,17 @@ export function CountryProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user country:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch country data');
         setIsCountryLoaded(true);
-      } finally {
       }
     };
 
     fetchUserCountry();
   }, [userProfile?.country_id]);
 
-  const value: CountryContextType = {
+  const value = useMemo<CountryContextType>(() => ({
     userCountry,
     error,
     isCountryLoaded,
-  };
+  }), [userCountry, error, isCountryLoaded]);
 
   return (
     <CountryContext.Provider value={value}>

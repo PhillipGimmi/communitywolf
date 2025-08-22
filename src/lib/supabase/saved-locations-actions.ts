@@ -1,52 +1,21 @@
 'use server';
 
-import { createServerClient } from './server';
 import { SavedLocation } from '@/types/dashboard';
+import { 
+  fetchSavedLocations, 
+  fetchPrimaryLocation, 
+  createLocation, 
+  updateLocation, 
+  deleteLocation,
+  unsetPrimaryLocation 
+} from './saved-locations-utils';
 
 export async function getSavedLocationsAction(userId: string): Promise<SavedLocation[]> {
-  try {
-    const supabase = await createServerClient();
-    
-    const { data, error } = await supabase
-      .from('saved_locations')
-      .select('*')
-      .eq('user_id', userId)
-      .order('is_primary', { ascending: false })
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching saved locations:', error);
-      throw error;
-    }
-
-    return data || [];
-  } catch (error) {
-    console.error('Error in getSavedLocationsAction:', error);
-    throw error;
-  }
+  return fetchSavedLocations(userId);
 }
 
 export async function getPrimaryLocationAction(userId: string): Promise<SavedLocation | null> {
-  try {
-    const supabase = await createServerClient();
-    
-    const { data, error } = await supabase
-      .from('saved_locations')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_primary', true)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-      console.error('Error fetching primary location:', error);
-      throw error;
-    }
-
-    return data || null;
-  } catch (error) {
-    console.error('Error in getPrimaryLocationAction:', error);
-    return null;
-  }
+  return fetchPrimaryLocation(userId);
 }
 
 export async function createSavedLocationAction(locationData: {
@@ -59,29 +28,12 @@ export async function createSavedLocationAction(locationData: {
   radius_km: number;
 }): Promise<SavedLocation> {
   try {
-    const supabase = await createServerClient();
-    
     // If this is being set as primary, unset any existing primary location
     if (locationData.is_primary) {
-      await supabase
-        .from('saved_locations')
-        .update({ is_primary: false })
-        .eq('user_id', locationData.user_id)
-        .eq('is_primary', true);
+      await unsetPrimaryLocation(locationData.user_id);
     }
     
-    const { data, error } = await supabase
-      .from('saved_locations')
-      .insert([locationData])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating saved location:', error);
-      throw error;
-    }
-
-    return data;
+    return await createLocation(locationData);
   } catch (error) {
     console.error('Error in createSavedLocationAction:', error);
     throw error;
@@ -100,10 +52,11 @@ export async function updateSavedLocationAction(
   }
 ): Promise<SavedLocation> {
   try {
-    const supabase = await createServerClient();
-    
     // If this is being set as primary, unset any existing primary location
     if (updates.is_primary) {
+      const { createServerClient } = await import('./server');
+      const supabase = await createServerClient();
+      
       const { data: currentLocation } = await supabase
         .from('saved_locations')
         .select('user_id')
@@ -111,27 +64,11 @@ export async function updateSavedLocationAction(
         .single();
       
       if (currentLocation) {
-        await supabase
-          .from('saved_locations')
-          .update({ is_primary: false })
-          .eq('user_id', currentLocation.user_id)
-          .eq('is_primary', true);
+        await unsetPrimaryLocation(currentLocation.user_id);
       }
     }
     
-    const { data, error } = await supabase
-      .from('saved_locations')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating saved location:', error);
-      throw error;
-    }
-
-    return data;
+    return await updateLocation(id, updates);
   } catch (error) {
     console.error('Error in updateSavedLocationAction:', error);
     throw error;
@@ -139,20 +76,6 @@ export async function updateSavedLocationAction(
 }
 
 export async function deleteSavedLocationAction(id: string): Promise<void> {
-  try {
-    const supabase = await createServerClient();
-    
-    const { error } = await supabase
-      .from('saved_locations')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting saved location:', error);
-      throw error;
-    }
-  } catch (error) {
-    console.error('Error in deleteSavedLocationAction:', error);
-    throw error;
-  }
+  return deleteLocation(id);
 }
+

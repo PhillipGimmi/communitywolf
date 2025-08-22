@@ -10,7 +10,7 @@ interface ProcessingStep {
 }
 
 interface ProcessingStatusProps {
-  isActive: boolean;
+  readonly isActive: boolean;
 }
 
 export function ProcessingStatus({ isActive }: ProcessingStatusProps) {

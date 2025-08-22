@@ -49,7 +49,7 @@ export async function geocodeLocation(params: {
       const geocodingResult: GeocodingResult = {
         coordinates: [parseFloat(result.lon), parseFloat(result.lat)],
         address: result.display_name,
-        confidence: result.importance || 0.5
+        confidence: result.importance ?? 0.5
       };
       
       console.log('Geocoding: Found coordinates:', geocodingResult.coordinates);
@@ -111,8 +111,8 @@ export function extractLocationFromText(text: string): string | null {
   ];
   
   for (const pattern of safeLocationPatterns) {
-    const match = normalizedText.match(pattern.regex);
-    if (match && match[pattern.group]) {
+    const match = pattern.regex.exec(normalizedText);
+    if (match?.[pattern.group]) {
       return match[pattern.group].trim();
     }
   }
@@ -154,132 +154,4 @@ export function extractLocationFromTextSecure(text: string): string | null {
   }
   
   return null;
-}
-
-// src/lib/tools/classification.ts
-import { CrimeType } from '@/types/safety';
-
-export async function classifyCrime(params: {
-  description: string;
-  context?: string;
-}): Promise<{ type: CrimeType; severity: number; keywords: string[] }> {
-  const { description, context } = params;
-  
-  // Input validation
-  if (!description || typeof description !== 'string') {
-    throw new Error('Invalid description provided');
-  }
-  
-  // Limit input length to prevent ReDoS
-  const maxLength = 2000;
-  const trimmedDescription = description.length > maxLength ? description.substring(0, maxLength) : description;
-  const trimmedContext = context && context.length > maxLength ? context.substring(0, maxLength) : context;
-  
-  const text = `${trimmedDescription} ${trimmedContext || ''}`.toLowerCase();
-  
-  console.log('Classification: Analyzing crime type for:', trimmedDescription);
-  
-  // Extract keywords
-  const keywords = extractKeywordsSecure(text);
-  
-  // Classify crime type
-  const type = classifyCrimeTypeSecure(text);
-  
-  // Assess severity (1-5 scale)
-  const severity = assessSeveritySecure(text);
-  
-  console.log('Classification: Result - Type:', type, 'Severity:', severity, 'Keywords:', keywords);
-  
-  return { type, severity, keywords };
-}
-
-function extractKeywordsSecure(text: string): string[] {
-  // Secure keyword extraction using simple string operations
-  const keywordCategories = {
-    violence: ['murder', 'killing', 'homicide', 'shot', 'stabbed', 'assault', 'attack', 'violence'],
-    robbery: ['robbery', 'robbed', 'mugging', 'hijacking', 'armed robbery'],
-    theft: ['theft', 'stolen', 'stealing', 'shoplifting'],
-    burglary: ['burglary', 'break-in', 'breaking and entering', 'housebreaking'],
-    vandalism: ['vandalism', 'damage', 'graffiti'],
-    vehicle: ['car theft', 'vehicle theft', 'hijacking', 'carjacking'],
-    drugs: ['drugs', 'narcotics', 'dealing', 'trafficking', 'possession'],
-    sexual: ['rape', 'sexual assault', 'sexual harassment'],
-    weapons: ['gun', 'firearm', 'knife', 'weapon', 'armed'],
-    locations: ['home', 'house', 'shop', 'store', 'mall', 'street', 'park'],
-    time: ['night', 'evening', 'morning', 'afternoon']
-  };
-  
-  const foundKeywords: string[] = [];
-  
-  // Use simple string includes() - no regex needed
-  Object.values(keywordCategories).flat().forEach(keyword => {
-    if (text.includes(keyword)) {
-      foundKeywords.push(keyword);
-    }
-  });
-  
-  return [...new Set(foundKeywords)]; // Remove duplicates
-}
-
-function classifyCrimeTypeSecure(text: string): CrimeType {
-  // Use simple string checks instead of complex regex
-  const crimeTypeChecks = [
-    {
-      type: 'Violent Crimes' as CrimeType,
-      keywords: ['murder', 'killing', 'homicide', 'shot', 'stabbed', 'assault', 'attack', 'violence', 'robbery', 'robbed', 'mugging', 'hijack']
-    },
-    {
-      type: 'Sexual Offences' as CrimeType,
-      keywords: ['rape', 'sexual assault', 'sexual', 'harassment']
-    },
-    {
-      type: 'Property & Financial Crimes' as CrimeType,
-      keywords: ['theft', 'stolen', 'burglary', 'break-in', 'fraud', 'scam', 'embezzlement', 'shoplifting']
-    },
-    {
-      type: 'Cyber & Communication Crimes' as CrimeType,
-      keywords: ['cyber', 'online', 'internet', 'email', 'phishing', 'hacking', 'digital']
-    },
-    {
-      type: 'Organised Crime & Syndicate Operations' as CrimeType,
-      keywords: ['gang', 'syndicate', 'organized', 'trafficking', 'money laundering', 'racketeering']
-    }
-  ];
-  
-  for (const check of crimeTypeChecks) {
-    if (check.keywords.some(keyword => text.includes(keyword))) {
-      return check.type;
-    }
-  }
-  
-  return 'Public Order & Social Crimes';
-}
-
-function assessSeveritySecure(text: string): number {
-  let severity = 1; // Base severity
-  
-  // Use simple string checks for severity assessment
-  const severityChecks = [
-    { keywords: ['murder', 'killing', 'death', 'died', 'fatal'], severity: 5 },
-    { keywords: ['shot', 'stabbed', 'injured', 'wounded', 'armed', 'gun', 'weapon'], severity: 4 },
-    { keywords: ['assault', 'attack', 'robbery', 'hijack'], severity: 3 },
-    { keywords: ['theft', 'stolen', 'break-in', 'burglary'], severity: 2 }
-  ];
-  
-  for (const check of severityChecks) {
-    if (check.keywords.some(keyword => text.includes(keyword))) {
-      severity = Math.max(severity, check.severity);
-    }
-  }
-  
-  // Modifiers
-  if (['multiple', 'several', 'gang', 'group'].some(keyword => text.includes(keyword))) {
-    severity = Math.min(5, severity + 1);
-  }
-  
-  if (['attempted', 'failed', 'prevented'].some(keyword => text.includes(keyword))) {
-    severity = Math.max(1, severity - 1);
-  }
-  
-  return severity;
 }

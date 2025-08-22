@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 interface AuthWrapperProps {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 export function AuthWrapper({ children }: AuthWrapperProps) {

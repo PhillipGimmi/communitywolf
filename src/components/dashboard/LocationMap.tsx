@@ -15,8 +15,8 @@ Icon.Default.mergeOptions({
 });
 
 interface LocationMapProps {
-  locations: SavedLocation[];
-  onLocationClick?: (location: SavedLocation) => void;
+  readonly locations: SavedLocation[];
+  readonly onLocationClick?: (location: SavedLocation) => void;
 }
 
 // Component to fit map bounds when locations change
@@ -92,15 +92,26 @@ export default function LocationMap({ locations, onLocationClick }: LocationMapP
   };
 
   const getLocationIcon = (name: string) => {
-    const iconColor = name.toLowerCase().includes('home') ? '#3B82F6' : 
-                     name.toLowerCase().includes('work') ? '#10B981' : '#6B7280';
+    // Extract nested ternary into independent function for better readability
+    const getIconColor = (locationName: string): string => {
+      if (locationName.toLowerCase().includes('home')) return '#3B82F6';
+      if (locationName.toLowerCase().includes('work')) return '#10B981';
+      return '#6B7280';
+    };
+    
+    const iconColor = getIconColor(name);
+    
+    // Refactor nested template literals for better readability
+    const svgContent = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${iconColor}"/>
+      </svg>
+    `;
+    
+    const iconUrl = `data:image/svg+xml;base64,${btoa(svgContent)}`;
     
     return new Icon({
-      iconUrl: `data:image/svg+xml;base64,${btoa(`
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${iconColor}"/>
-        </svg>
-      `)}`,
+      iconUrl,
       iconSize: [24, 24],
       iconAnchor: [12, 24],
       popupAnchor: [0, -24]
@@ -144,7 +155,7 @@ export default function LocationMap({ locations, onLocationClick }: LocationMapP
     <div className="h-96 rounded-lg border border-gray-200 bg-white relative">
       <div className="p-2 bg-gray-50 border-b border-gray-200">
         <p className="text-sm text-gray-600">
-          Map showing {locations.length} location(s) in {userCountry?.name || 'your area'}
+          Map showing {locations.length} location(s) in {userCountry?.name?? 'your area'}
         </p>
       </div>
       <MapContainer

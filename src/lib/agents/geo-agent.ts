@@ -19,8 +19,8 @@ export interface IncidentReport {
 }
 
 export interface GeoAgentRequest {
-  query: string;
-  searchResults: WebSearchResult[];
+  readonly query: string;
+  readonly searchResults: WebSearchResult[];
 }
 
 export interface GeoAgentResponse {
@@ -40,9 +40,9 @@ export interface GeoAgentResponse {
  * 4. Saves to /data/results/{timestamp}.json
  */
 export class GeoAgent {
-  private openRouterApiKey: string;
-  private openRouterBaseUrl: string;
-  private dataDir: string;
+  private readonly openRouterApiKey: string;
+  private readonly openRouterBaseUrl: string;
+  private readonly dataDir: string;
 
   constructor() {
     this.openRouterApiKey = process.env.OPENROUTER_API_KEY || '';
@@ -248,8 +248,7 @@ Generate 2-4 realistic incidents. For coordinates, if location is unclear, use r
     }
     
     // Generate severity based on type
-    const severity = type === "Violent Crimes" ? 4 : 
-                    type === "Property & Financial Crimes" ? 3 : 2;
+    const severity = this.getSeverityForType(type);
     
     return {
       datetime: now.toISOString(),
@@ -368,6 +367,28 @@ Generate 2-4 realistic incidents. For coordinates, if location is unclear, use r
     } catch {
       await fs.mkdir(this.dataDir, { recursive: true });
       console.log('📁 GeoAgent: Created data directory:', this.dataDir);
+    }
+  }
+
+  /**
+   * Get severity rating for an incident type
+   */
+  private getSeverityForType(type: string): number {
+    switch (type) {
+      case "Violent Crimes":
+        return 4;
+      case "Property & Financial Crimes":
+        return 3;
+      case "Public Order & Social Crimes":
+        return 2;
+      case "Cyber & Communication Crimes":
+        return 2;
+      case "Organised Crime & Syndicate Operations":
+        return 3;
+      case "Sexual Offences":
+        return 3;
+      default:
+        return 2; // Default severity
     }
   }
 }

@@ -51,6 +51,53 @@ interface AuthState {
 // Check if we're in the browser
 const isBrowser = typeof window !== 'undefined';
 
+// Shared utility functions to eliminate duplication
+const createSupabaseClient = () => {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+};
+
+const setAuthenticatedState = (set: (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void, user: User, userProfile: UserProfile | null) => {
+  set({ 
+    isAuthenticated: true, 
+    user, 
+    userProfile,
+    loading: false 
+  });
+};
+
+const setUnauthenticatedState = (set: (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void) => {
+  set({ 
+    isAuthenticated: false, 
+    user: null, 
+    userProfile: null, 
+    loading: false 
+  });
+};
+
+const fetchUserProfile = async (supabase: ReturnType<typeof createBrowserClient>, userId: string) => {
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (profileError) {
+      console.warn('⚠️ AuthStore: Could not fetch profile:', profileError);
+      return null;
+    } else {
+      console.log('✅ AuthStore: Profile fetched successfully:', profile.full_name);
+      return profile;
+    }
+  } catch (profileError) {
+    console.warn('⚠️ AuthStore: Profile fetch failed:', profileError);
+    return null;
+  }
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   userProfile: null,
@@ -103,12 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // Create Supabase client
       console.log('🔧 AuthStore: Creating Supabase client...');
-      
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      
+      const supabase = createSupabaseClient();
       console.log('✅ AuthStore: Supabase client created successfully');
       
       // Get initial session
@@ -117,7 +159,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (sessionError) {
         console.error('❌ AuthStore: Error getting session:', sessionError);
-        set({ isAuthenticated: false, user: null, userProfile: null, loading: false });
+        setUnauthenticatedState(set);
         return;
       }
       
@@ -125,42 +167,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         console.log('✅ AuthStore: User is authenticated:', session.user.email);
         
         // Try to fetch user profile
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError) {
-            console.warn('⚠️ AuthStore: Could not fetch profile:', profileError);
-            set({ 
-              isAuthenticated: true, 
-              user: session.user, 
-              userProfile: null,
-              loading: false 
-            });
-          } else {
-            console.log('✅ AuthStore: Profile fetched successfully:', profile.full_name);
-            set({ 
-              isAuthenticated: true, 
-              user: session.user, 
-              userProfile: profile,
-              loading: false 
-            });
-          }
-        } catch (profileError) {
-          console.warn('⚠️ AuthStore: Profile fetch failed:', profileError);
-          set({ 
-            isAuthenticated: true, 
-            user: session.user, 
-            userProfile: null,
-            loading: false 
-          });
-        }
+        const profile = await fetchUserProfile(supabase, session.user.id);
+        setAuthenticatedState(set, session.user, profile);
       } else {
         console.log('❌ AuthStore: No active session found');
-        set({ isAuthenticated: false, user: null, userProfile: null, loading: false });
+        setUnauthenticatedState(set);
       }
       
       // Set up auth state listener
@@ -170,48 +181,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('✅ AuthStore: User signed in:', session.user.email);
-          
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (profileError) {
-              console.warn('⚠️ AuthStore: Could not fetch profile on sign in:', profileError);
-              set({ 
-                isAuthenticated: true, 
-                user: session.user, 
-                userProfile: null,
-                loading: false 
-              });
-            } else {
-              console.log('✅ AuthStore: Profile fetched on sign in:', profile.full_name);
-              set({ 
-                isAuthenticated: true, 
-                user: session.user, 
-                userProfile: profile,
-                loading: false 
-              });
-            }
-          } catch (profileError) {
-            console.warn('⚠️ AuthStore: Profile fetch failed on sign in:', profileError);
-            set({ 
-              isAuthenticated: true, 
-              user: session.user, 
-              userProfile: null,
-              loading: false 
-            });
-          }
+          const profile = await fetchUserProfile(supabase, session.user.id);
+          setAuthenticatedState(set, session.user, profile);
         } else if (event === 'SIGNED_OUT') {
           console.log('🔧 AuthStore: User signed out, clearing state...');
-          set({ 
-            isAuthenticated: false, 
-            user: null, 
-            userProfile: null, 
-            loading: false 
-          });
+          setUnauthenticatedState(set);
         }
       });
       
@@ -221,12 +195,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('❌ AuthStore: Critical error initializing auth:', error);
       // Always ensure we're not stuck in loading state
-      set({ 
-        isAuthenticated: false,
-        user: null,
-        userProfile: null,
-        loading: false
-      });
+      setUnauthenticatedState(set);
     }
   },
 
@@ -249,10 +218,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isAuthenticated: false, user: null, userProfile: null, loading: false, subscription: null });
     
     console.log('🔧 AuthStore: Creating Supabase client...');
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createSupabaseClient();
     
     try {
       console.log('🔧 AuthStore: Calling Supabase signOut...');

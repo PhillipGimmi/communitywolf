@@ -69,7 +69,7 @@ export function CrimeAnalytics() {
   
   // Search functionality
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResponse] = useState<SearchResponse | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   
@@ -139,7 +139,7 @@ export function CrimeAnalytics() {
       }
       
       const data: SearchResponse = await response.json();
-      setSearchResponse(data);
+      setSearchResults(data);
       
       // Trigger background GeoAgent processing for analytics
       triggerGeoAgentProcessing(searchQuery);
@@ -282,8 +282,8 @@ export function CrimeAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analyticsData.areaStats.map((stat, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              {analyticsData.areaStats.map((stat) => (
+                <div key={`area-${stat.area}`} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <MapPin className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-900">{stat.area}</span>
@@ -309,8 +309,8 @@ export function CrimeAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analyticsData.severityDistribution.map((stat, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              {analyticsData.severityDistribution.map((stat) => (
+                <div key={`severity-${stat.severity}`} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className={`w-4 h-4 rounded-full ${getSeverityColor(stat.severity)}`}></div>
                     <span className="font-medium text-gray-900">
@@ -338,8 +338,8 @@ export function CrimeAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analyticsData.alertTypeBreakdown.map((stat, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              {analyticsData.alertTypeBreakdown.map((stat) => (
+                <div key={`alert-type-${stat.alert_type}`} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className={`w-4 h-4 rounded-full ${getIncidentTypeColor(stat.alert_type)}`}></div>
                     <span className="font-medium text-gray-900 capitalize">{stat.alert_type}</span>
@@ -405,7 +405,7 @@ export function CrimeAnalytics() {
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        <span>{incident.area || incident.location}</span>
+                        <span>{incident.area ?? incident.location}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
@@ -418,8 +418,8 @@ export function CrimeAnalytics() {
                     
                     {incident.keywords && incident.keywords.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {incident.keywords.map((keyword, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs border-gray-200 text-gray-600">
+                        {incident.keywords.map((keyword) => (
+                          <Badge key={`${incident.id}-keyword-${keyword}`} variant="outline" className="text-xs border-gray-200 text-gray-600">
                             {keyword}
                           </Badge>
                         ))}
@@ -450,12 +450,12 @@ export function CrimeAnalytics() {
               placeholder="e.g., Crime trends in Parkhurst, Johannesburg?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1 border-gray-200"
             />
             <Button 
               onClick={handleSearch}
-              disabled={isSearching || !searchQuery.trim()}
+              disabled={isSearching ?? !searchQuery.trim()}
               className="bg-black hover:bg-gray-800 text-white"
             >
               {isSearching ? (
