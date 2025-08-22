@@ -84,12 +84,12 @@ export function extractLocationFromText(text: string): string | null {
     'bloemfontein',
     'port elizabeth', 'gqeberha',
     // Johannesburg suburbs
-    'sandton', 'rosebank', 'parkhurst', 'melville', 'bryanston', 'fourways',
+    'sandton', 'rosebank', 'melville', 'bryanston', 'fourways',
     'hyde park', 'illovo', 'morningside', 'rivonia', 'sunninghill',
     'soweto', 'alexandra', 'randburg', 'roodepoort', 'germiston',
     // Cape Town areas
     'camps bay', 'sea point', 'green point', 'waterfront', 'claremont',
-    'stellenbosch', 'paarl', 'bellville', 'parow', 'goodwood'
+    'stellenbosch', 'paarl', 'bellville', 'parow', 'goodwood', 'edgemead'
   ];
   
   // Check for exact matches first (most secure)
@@ -132,7 +132,7 @@ export function extractLocationFromTextSecure(text: string): string | null {
   const locationKeywords = [
     'johannesburg', 'joburg', 'jozi', 'cape town', 'capetown',
     'durban', 'pretoria', 'sandton', 'rosebank', 'soweto',
-    'camps bay', 'stellenbosch', 'bellville'
+    'camps bay', 'stellenbosch', 'bellville', 'edgemead'
   ];
   
   // Find location keywords

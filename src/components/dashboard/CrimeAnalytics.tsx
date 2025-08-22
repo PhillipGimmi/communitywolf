@@ -447,7 +447,7 @@ export function CrimeAnalytics() {
         <CardContent>
           <div className="flex space-x-2">
             <Input
-              placeholder="e.g., Crime trends in Parkhurst, Johannesburg?"
+                              placeholder="e.g., Crime trends in Edgemead, Cape Town?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

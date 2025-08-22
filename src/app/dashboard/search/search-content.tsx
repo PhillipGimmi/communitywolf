@@ -48,7 +48,7 @@ export function SearchContent() {
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Be Specific</h3>
                 <p className="text-sm text-gray-600">
-                  Include location names like &ldquo;Parkhurst, Johannesburg&rdquo; for better results
+                  Include location names like &ldquo;Edgemead, Cape Town&rdquo; for better results
                 </p>
               </div>
               <div className="text-center">
@@ -86,7 +86,7 @@ export function SearchContent() {
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="font-medium text-gray-900 mb-2">Location-based</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• &ldquo;Crime in Parkhurst, Johannesburg&rdquo;</li>
+                  <li>• &ldquo;Crime in Edgemead, Cape Town&rdquo;</li>
                   <li>• &ldquo;Safety news in Cape Town&rdquo;</li>
                   <li>• &ldquo;Recent incidents in London&rdquo;</li>
                 </ul>

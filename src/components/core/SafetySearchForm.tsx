@@ -58,7 +58,7 @@ export function SafetySearchForm() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Any crime or public safety news in Parkhurst, Johannesburg?"
+            placeholder="Any crime or public safety news in your area?"
             className="flex-1 border-slate-300 focus:border-sky-500 focus:ring-sky-500"
             disabled={isLoading}
           />

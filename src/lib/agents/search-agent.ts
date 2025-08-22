@@ -54,7 +54,7 @@ export class SearchAgent {
       if (this.openRouterApiKey && webSearchResults.results.length > 0) {
         summary = await this.generateSummaryWithLLM(request.query, webSearchResults.results, request.timeFrame);
       } else {
-        summary = this.generateFallbackSummary(request.query, webSearchResults.results, request.timeFrame);
+        throw new Error('AI processing not available. Please try again later.');
       }
       
       // Step 3: Trigger background GeoAgent (fire and forget)
@@ -142,8 +142,9 @@ export class SearchAgent {
       return summary;
       
     } catch (error) {
-      console.error('❌ SearchAgent: LLM summary failed, using fallback:', error);
-      return this.generateFallbackSummary(query, results, timeFrame);
+      console.error('❌ SearchAgent: LLM summary failed:', error);
+      // No fallback - throw error instead of generating misleading content
+      throw new Error('AI summary generation failed. Please try again later.');
     }
   }
 
@@ -175,44 +176,9 @@ Please provide a clear, factual summary that:
 Keep the summary under 100 words and focus on the most important information.`;
   }
 
-  /**
-   * Fallback summary generation when LLM is unavailable
-   */
-  private generateFallbackSummary(query: string, results: WebSearchResult[], timeFrame?: string): string {
-    if (results.length === 0) {
-      const timeContext = timeFrame && timeFrame !== 'all time' ? ` for ${timeFrame}` : '';
-      return `No recent safety news found for "${query}"${timeContext}. Your area appears to be safe, but always remain vigilant and report any suspicious activity to local authorities.`;
-    }
 
-    const location = this.extractLocationFromQuery(query);
-    const incidentCount = results.length;
-    const timeContext = timeFrame && timeFrame !== 'all time' ? ` in the ${timeFrame}` : '';
-    
-    return `Found ${incidentCount} recent safety incidents in ${location}${timeContext}. Key concerns include ${this.extractKeyConcerns(results)}. Local authorities are actively monitoring the situation. Stay informed and report any suspicious activity.`;
-  }
 
-  /**
-   * Extract location from user query
-   */
-  private extractLocationFromQuery(query: string): string {
-    const locationMatch = query.match(/(?:in|at|near|around)\s+([^,]+(?:,\s*[^,]+)*)/i);
-    return locationMatch ? locationMatch[1] : 'your area';
-  }
 
-  /**
-   * Extract key safety concerns from search results
-   */
-  private extractKeyConcerns(results: WebSearchResult[]): string {
-    const concerns = results.slice(0, 2).map(result => {
-      if (result.title.toLowerCase().includes('robbery')) return 'robbery';
-      if (result.title.toLowerCase().includes('theft')) return 'theft';
-      if (result.title.toLowerCase().includes('assault')) return 'assault';
-      if (result.title.toLowerCase().includes('vandalism')) return 'vandalism';
-      return 'safety incidents';
-    });
-    
-    return concerns.join(' and ');
-  }
 
   /**
    * Trigger background GeoAgent processing
